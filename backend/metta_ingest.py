@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """
-MeTTa Ingestion Module for TokenSwap API Documentation
+Dr.Doc MeTTa Knowledge Base
 
-This module parses Markdown documentation files to extract structured facts
-and converts them into MeTTa atoms for precise querying.
+Clean MeTTa integration for symbolic reasoning and knowledge graph creation.
+Extracts structured facts from documentation and converts them to MeTTa atoms.
+
+Author: Dr.Doc Team
 """
 
 import os
