@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ChevronRight, Info, AlertTriangle } from 'lucide-react';
 import { useChat } from '@/contexts/ChatContext';
+import DocumentationBlock from '@/components/DocumentationBlock';
 
 export default function Documentation() {
   const [activeSection, setActiveSection] = useState('welcome');
@@ -57,7 +58,7 @@ export default function Documentation() {
       // Only auto-open if chat was previously open
       const chatWasOpen = localStorage.getItem('chatOpen') === 'true';
       if (chatWasOpen) {
-        openChat();
+    openChat();
       }
     }
   }, [openChat]);
@@ -105,15 +106,18 @@ export default function Documentation() {
             <h2 className="text-3xl font-semibold text-gray-900 dark:text-white mb-4">
               Welcome to ASI:One Documentation
             </h2>
+            <DocumentationBlock>
             <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
               ASI:One is an advanced AI platform designed to enable seamless communication and collaboration between AI agents in decentralized environments. Built by Fetch.ai and the ASI Alliance, it provides powerful tools for building and deploying agentic AI systems.
             </p>
+            </DocumentationBlock>
           </section>
 
           <section id="what-is-asi-one" className="mb-12">
             <h2 className="text-3xl font-semibold text-gray-900 dark:text-white mb-4">
               What is ASI:One?
             </h2>
+            <DocumentationBlock>
             <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
               ASI:One is an LLM optimized for agentic AI within decentralized environments, integrating with the ASI wallet powered by the FET token. It provides a comprehensive platform for building, deploying, and managing AI agents that can communicate and collaborate effectively.
             </p>
@@ -132,6 +136,7 @@ export default function Documentation() {
                 </div>
               </div>
             </div>
+            </DocumentationBlock>
           </section>
 
           <section id="key-features" className="mb-12">
@@ -140,6 +145,7 @@ export default function Documentation() {
             </h2>
             
             <div className="space-y-6">
+              <DocumentationBlock>
               <div>
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                   Agentic Reasoning
@@ -148,7 +154,9 @@ export default function Documentation() {
                   ASI:One is specifically designed for agentic AI, enabling sophisticated reasoning and decision-making capabilities that allow AI agents to operate autonomously and make intelligent choices in complex environments.
                 </p>
               </div>
+              </DocumentationBlock>
 
+              <DocumentationBlock>
               <div>
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                   Natural Language Understanding
@@ -157,7 +165,9 @@ export default function Documentation() {
                   Advanced natural language processing capabilities enable seamless communication between AI agents and human users, supporting complex conversations and context-aware interactions.
                 </p>
               </div>
+              </DocumentationBlock>
 
+              <DocumentationBlock>
               <div>
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                   Multi-Step Task Execution
@@ -166,7 +176,9 @@ export default function Documentation() {
                   ASI:One can break down complex tasks into manageable steps, execute them systematically, and coordinate multiple operations to achieve desired outcomes efficiently.
                 </p>
               </div>
+              </DocumentationBlock>
 
+              <DocumentationBlock>
               <div>
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                   Contextual Memory
@@ -175,7 +187,9 @@ export default function Documentation() {
                   Maintains context across interactions, allowing AI agents to remember previous conversations, learn from past experiences, and provide more personalized and relevant responses.
                 </p>
               </div>
+              </DocumentationBlock>
 
+              <DocumentationBlock>
               <div>
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                   API-Driven Integration
@@ -184,6 +198,7 @@ export default function Documentation() {
                   RESTful API architecture makes it easy to integrate ASI:One into existing systems, applications, and workflows, providing flexible deployment options.
                 </p>
               </div>
+              </DocumentationBlock>
             </div>
           </section>
 
@@ -191,6 +206,7 @@ export default function Documentation() {
             <h2 className="text-3xl font-semibold text-gray-900 dark:text-white mb-4">
               Getting Started
             </h2>
+            <DocumentationBlock>
             <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
               To begin using ASI:One, you&apos;ll need to sign up and obtain an API key. Follow these simple steps:
             </p>
@@ -213,12 +229,14 @@ export default function Documentation() {
                 </div>
               </div>
             </div>
+            </DocumentationBlock>
           </section>
 
           <section id="current-model" className="mb-12">
             <h2 className="text-3xl font-semibold text-gray-900 dark:text-white mb-4">
               Current Model
             </h2>
+            <DocumentationBlock>
             <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
               The current available model is <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm">asi1-mini</code>, which provides excellent performance for most agentic AI tasks while maintaining cost efficiency.
             </p>
@@ -237,6 +255,7 @@ export default function Documentation() {
                 </div>
               </div>
             </div>
+            </DocumentationBlock>
           </section>
 
           <section id="api-key" className="mb-12">

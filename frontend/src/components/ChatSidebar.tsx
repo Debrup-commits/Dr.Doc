@@ -14,7 +14,7 @@ export default function ChatSidebar() {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -25,8 +25,8 @@ export default function ChatSidebar() {
   }, [messages]);
 
   useEffect(() => {
-    if (isChatOpen && inputRef.current) {
-      inputRef.current.focus();
+    if (isChatOpen && textareaRef.current) {
+      textareaRef.current.focus();
     }
   }, [isChatOpen]);
 
@@ -93,11 +93,40 @@ export default function ChatSidebar() {
     await sendMessage(messageText);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
+    // Shift+Enter allows new lines, handled automatically by textarea
+  };
+
+  // Auto-resize textarea based on content
+  const adjustTextareaHeight = () => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      const scrollHeight = textareaRef.current.scrollHeight;
+      const maxHeight = 128; // 8rem = 128px (max-h-32)
+      const minHeight = 52; // min-h-[52px]
+      
+      if (scrollHeight > maxHeight) {
+        textareaRef.current.style.height = `${maxHeight}px`;
+      } else if (scrollHeight > minHeight) {
+        textareaRef.current.style.height = `${scrollHeight}px`;
+      } else {
+        textareaRef.current.style.height = `${minHeight}px`;
+      }
+    }
+  };
+
+  // Adjust height when input text changes
+  useEffect(() => {
+    adjustTextareaHeight();
+  }, [inputText]);
+
+  // Handle textarea input change
+  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInputText(e.target.value);
   };
 
   const copyToClipboard = async (text: string, codeId: string) => {
@@ -383,17 +412,25 @@ export default function ChatSidebar() {
           <div className="px-4 py-6 border-t border-slate-700/30 bg-gradient-to-r from-slate-800/90 to-slate-700/90 backdrop-blur-xl mt-auto" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
             <div className="flex space-x-3">
               <div className="flex-1 relative">
-                <input
-                  ref={inputRef}
-                  type="text"
+                <textarea
+                  ref={textareaRef}
                   value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder={backendStatus === 'disconnected' ? 'Backend not connected...' : 'Ask Dr.Doc anything...'}
-                  className="w-full px-5 py-4 border border-slate-600/40 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 bg-slate-700/60 text-slate-100 placeholder-slate-400 backdrop-blur-sm transition-all duration-300 break-words"
+                  onChange={handleTextareaChange}
+                  onKeyDown={handleKeyPress}
+                  placeholder={backendStatus === 'disconnected' ? 'Backend not connected...' : 'Ask Dr.Doc anything... (Shift+Enter for new line)'}
+                  className="w-full px-5 py-4 border border-slate-600/40 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 bg-slate-700/60 text-slate-100 placeholder-slate-400 backdrop-blur-sm transition-all duration-300 break-words resize-none min-h-[52px] max-h-32 overflow-y-auto"
                   disabled={isLoading || backendStatus === 'disconnected'}
+                  rows={1}
+                  style={{
+                    lineHeight: '1.5',
+                    scrollbarWidth: 'thin',
+                    scrollbarColor: 'rgb(71 85 105) transparent'
+                  }}
                 />
-                <div className="absolute inset-y-0 right-0 flex items-center pr-4">
+                <div className="absolute bottom-2 right-2 flex items-center space-x-2">
+                  <div className="text-xs text-slate-400">
+                    {inputText.length > 0 && `${inputText.length} chars`}
+                  </div>
                   <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse opacity-50"></div>
                 </div>
               </div>
