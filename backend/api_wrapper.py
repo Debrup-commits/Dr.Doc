@@ -50,8 +50,42 @@ def initialize_rag_at_startup():
         print(f"⚠️ Could not initialize RAG system at startup: {e}")
         logger.warning(f"Could not initialize RAG system at startup: {e}")
 
-# Initialize RAG system
+def auto_process_documents_if_needed():
+    """Auto-process documents if system status indicates they're needed"""
+    try:
+        print("🔍 Checking if documents need to be processed...")
+        status = check_system_status()
+        
+        # Check if any critical status fields are False
+        needs_processing = not status.get("docs_processed", False) or not status.get("system_initialized", False)
+        
+        if needs_processing:
+            print("📚 System needs document processing. Auto-processing documents...")
+            
+            # Default docs directory
+            docs_dir = "../docs"
+            docs_path = Path(docs_dir)
+            if docs_path.exists() and docs_path.is_dir():
+                print(f"🔄 Processing documents from: {docs_dir}")
+                
+                # Call the MCP server function to process documents
+                result = asyncio.run(process_documents(docs_dir))
+                print(f"✅ Auto-processing result: {result}")
+                logger.info(f"Auto-processed documents: {result}")
+            else:
+                print(f"⚠️ Docs directory not found or invalid: {docs_dir}")
+                print("   Please create the docs directory and add documents, then call /api/process-documents")
+                print("   System will be ready once documents are processed")
+        else:
+            print("✅ System is already fully initialized - no processing needed")
+            
+    except Exception as e:
+        print(f"⚠️ Could not auto-process documents: {e}")
+        logger.warning(f"Auto-processing failed: {e}")
+
+# Initialize RAG system and auto-process documents if needed
 initialize_rag_at_startup()
+auto_process_documents_if_needed()
 
 @app.route('/api/health', methods=['GET'])
 def health_check():

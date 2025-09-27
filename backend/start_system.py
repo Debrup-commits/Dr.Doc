@@ -66,6 +66,10 @@ def run_api_wrapper():
     print("   POST /api/ask - Ask questions to Dr.Doc agent")
     print("   GET /api/status - Get system status")
     print("   GET /api/health - Health check")
+    print("\n🚀 System will automatically:")
+    print("   1. Initialize RAG pipeline at startup")
+    print("   2. Check if documents need processing")
+    print("   3. Auto-process documents if system status is incomplete")
     
     try:
         from api_wrapper import app

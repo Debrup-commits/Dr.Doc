@@ -62,9 +62,13 @@ async def process_documents(docs_dir_path: str) -> str:
         if processing_status["initialized"]:
             return "✅ System already initialized. Documents are ready for Q&A."
         
-        # Initialize components
+        # Initialize components only if not already done
         logger.info("🔧 Initializing system components...")
-        rag_system = SimpleRAG()
+        if rag_system is None:
+            rag_system = SimpleRAG()
+            logger.info("✅ RAG system initialized")
+        else:
+            logger.info("ℹ️ RAG system already initialized")
         
         # Step 1: Create MeTTa knowledge graphs
         logger.info("📚 Creating MeTTa knowledge graphs...")
@@ -191,6 +195,7 @@ async def ask_dr_doc(question: str, session_id: Optional[str] = None) -> str:
         
         # RAG system should be initialized at server startup
         if rag_system is None:
+            logger.error("❌ RAG system not initialized at startup!")
             return """
 ❌ RAG system not initialized!
 
