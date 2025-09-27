@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
-import { ChevronRight, Info, AlertTriangle, Code, Database, Zap } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ChevronRight, Info, AlertTriangle } from 'lucide-react';
+import { useChat } from '@/contexts/ChatContext';
 
 export default function ApiReference() {
   const [activeSection, setActiveSection] = useState('introduction');
+  const { openChat } = useChat();
 
   const sidebarItems = [
     {
@@ -47,6 +49,11 @@ export default function ApiReference() {
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
+
+  // Auto-open chat when navigating to API reference
+  useEffect(() => {
+    openChat();
+  }, [openChat]);
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900">
@@ -101,7 +108,7 @@ export default function ApiReference() {
                 <div>
                   <h4 className="text-blue-800 dark:text-blue-200 font-semibold mb-2">OpenAI Compatibility</h4>
                   <p className="text-blue-700 dark:text-blue-300">
-                    ASI:One's API is fully compatible with the OpenAI API specification, ensuring seamless integration with existing applications and tools.
+                    ASI:One&apos;s API is fully compatible with the OpenAI API specification, ensuring seamless integration with existing applications and tools.
                   </p>
                 </div>
               </div>
@@ -148,7 +155,7 @@ export default function ApiReference() {
             <ol className="list-decimal list-inside space-y-2 text-gray-600 dark:text-gray-300">
               <li>Sign up for an ASI:One account</li>
               <li>Navigate to the API Keys section in your dashboard</li>
-              <li>Click "Generate New API Key"</li>
+              <li>Click &quot;Generate New API Key&quot;</li>
               <li>Copy and securely store your API key</li>
             </ol>
           </section>
@@ -201,7 +208,7 @@ export default function ApiReference() {
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-mono text-sm">model</td>
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-gray-600 dark:text-gray-300">string</td>
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2"><span className="text-red-600 dark:text-red-400 font-semibold">Required</span></td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-gray-600 dark:text-gray-300">The model to use for completion (e.g., "asi1-mini")</td>
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-gray-600 dark:text-gray-300">The model to use for completion (e.g., &quot;asi1-mini&quot;)</td>
                   </tr>
                   <tr>
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-mono text-sm">messages</td>
@@ -359,7 +366,7 @@ export default function ApiReference() {
               Python Example
             </h2>
             <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
-              Here's how to use the ASI:One API with Python:
+              Here&apos;s how to use the ASI:One API with Python:
             </p>
             
             <div className="bg-gray-900 dark:bg-gray-800 text-gray-100 p-6 rounded-lg font-mono text-sm overflow-x-auto">

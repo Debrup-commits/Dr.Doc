@@ -19,16 +19,26 @@ interface ChatContextType {
   messages: Message[];
   addMessage: (message: Omit<Message, 'id' | 'timestamp'>) => void;
   clearMessages: () => void;
+  startNewChat: () => void;
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
   sendMessage: (text: string) => Promise<void>;
   backendStatus: 'connected' | 'disconnected' | 'checking';
   checkBackendStatus: () => Promise<void>;
+  currentSessionId: string;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 export function ChatProvider({ children }: { children: React.ReactNode }) {
+  // Initialize current session ID
+  const [currentSessionId, setCurrentSessionId] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('currentSessionId') || Date.now().toString();
+    }
+    return Date.now().toString();
+  });
+
   // Initialize chat state from localStorage or default to false
   const [isChatOpen, setIsChatOpen] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -42,13 +52,13 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     if (typeof window !== 'undefined') {
       const savedMessages = localStorage.getItem('chatMessages');
       const lastSessionId = localStorage.getItem('lastSessionId');
-      const currentSessionId = Date.now().toString();
+      const currentSessionId = localStorage.getItem('currentSessionId') || Date.now().toString();
       
       if (savedMessages) {
         try {
           const parsed = JSON.parse(savedMessages);
           // Convert timestamp strings back to Date objects
-          const messages = parsed.map((msg: any) => ({
+          const messages = parsed.map((msg: Message) => ({
             ...msg,
             timestamp: new Date(msg.timestamp)
           }));
@@ -74,6 +84,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       
       // First time user - set session ID
       localStorage.setItem('lastSessionId', currentSessionId);
+      localStorage.setItem('currentSessionId', currentSessionId);
     }
     
     return [
@@ -132,10 +143,10 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const clearMessages = useCallback(() => {
-    const currentSessionId = Date.now().toString();
+    const newSessionId = Date.now().toString();
     const defaultMessages = [
       {
-        id: `session-${currentSessionId}`,
+        id: `session-${newSessionId}`,
         text: `🔄 New session started at ${new Date().toLocaleString()}`,
         sender: 'system' as const,
         timestamp: new Date(),
@@ -150,10 +161,40 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       },
     ];
     setMessages(defaultMessages);
+    setCurrentSessionId(newSessionId);
     // Clear messages from localStorage and set new session ID
     if (typeof window !== 'undefined') {
       localStorage.setItem('chatMessages', JSON.stringify(defaultMessages));
-      localStorage.setItem('lastSessionId', currentSessionId);
+      localStorage.setItem('lastSessionId', newSessionId);
+      localStorage.setItem('currentSessionId', newSessionId);
+    }
+  }, []);
+
+  const startNewChat = useCallback(() => {
+    const newSessionId = Date.now().toString();
+    const defaultMessages = [
+      {
+        id: `session-${newSessionId}`,
+        text: `🆕 New chat started at ${new Date().toLocaleString()}`,
+        sender: 'system' as const,
+        timestamp: new Date(),
+        type: 'session-start' as const
+      },
+      {
+        id: '1',
+        text: 'Hello! I\'m your AI agent. How can I help you today?',
+        sender: 'agent' as const,
+        timestamp: new Date(),
+        type: 'message' as const
+      },
+    ];
+    setMessages(defaultMessages);
+    setCurrentSessionId(newSessionId);
+    // Update localStorage with new session
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('chatMessages', JSON.stringify(defaultMessages));
+      localStorage.setItem('lastSessionId', newSessionId);
+      localStorage.setItem('currentSessionId', newSessionId);
     }
   }, []);
 
@@ -179,7 +220,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         body: JSON.stringify({ 
           question: text.trim(),
           user_id: 'frontend_user',
-          session_id: Date.now().toString()
+          session_id: currentSessionId
         }),
       });
 
@@ -196,7 +237,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         
         // Add sources if available
         if (data.sources && data.sources.length > 0) {
-          const sourceNames = data.sources.map((source: any) => 
+          const sourceNames = data.sources.map((source: string | { source?: string }) => 
             typeof source === 'string' ? source : source.source || 'Unknown'
           );
           responseText += `\n\n📚 Sources: ${sourceNames.join(', ')}`;
@@ -245,7 +286,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, [addMessage, isLoading]);
+  }, [addMessage, isLoading, currentSessionId]);
 
   const checkBackendStatus = useCallback(async () => {
     setBackendStatus('checking');
@@ -286,11 +327,13 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     messages,
     addMessage,
     clearMessages,
+    startNewChat,
     isLoading,
     setIsLoading,
     sendMessage,
     backendStatus,
     checkBackendStatus,
+    currentSessionId,
   };
 
   return (

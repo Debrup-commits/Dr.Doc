@@ -28,8 +28,13 @@ class BGEEmbedder:
         
         try:
             logger.info(f"Loading BGE model: {model_name}")
-            self.model = SentenceTransformer(model_name)
-            logger.info(f"✅ BGE model loaded successfully")
+            # Force CPU device to avoid meta tensor issues
+            import torch
+            device = 'cpu'
+            self.model = SentenceTransformer(model_name, device=device)
+            # Ensure model is on CPU and not using meta tensors
+            self.model = self.model.to(device)
+            logger.info(f"✅ BGE model loaded successfully on {device}")
         except Exception as e:
             logger.error(f"❌ Failed to load BGE model: {e}")
             raise

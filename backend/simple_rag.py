@@ -285,8 +285,8 @@ class SimpleRAG:
             answer_parts.append("## 📋 Answer")
             answer_parts.append("")
             
-            # Add MeTTa reasoning if available
-            if metta_reasoning:
+            # Add MeTTa reasoning only if insights are found
+            if metta_reasoning and "No specific patterns found" not in metta_reasoning:
                 answer_parts.append("### 🧠 MeTTa Reasoning")
                 answer_parts.append("")
                 answer_parts.append(metta_reasoning)
@@ -321,21 +321,28 @@ class SimpleRAG:
                     answer_parts.append(additional_content)
                     answer_parts.append("")
             
-            # Add citations section
+            # Add citations section - always present
             answer_parts.append("\n---\n")
             answer_parts.append("## 📖 Citations")
             answer_parts.append("")
             
-            # Add source citations with clickable links
-            for i, source in enumerate(sources, 1):
-                filename = source['source']
-                score = source['score']
-                # Create clickable link to documentation page
-                doc_link = f"/documentation#{filename.replace('.md', '').lower()}"
-                answer_parts.append(f"**[{i}]** [{filename}]({doc_link}) (relevance: {score:.2f})")
+            # Add document citations - always present
+            if sources:
+                answer_parts.append("### 📚 Document Sources")
+                answer_parts.append("")
+                for i, source in enumerate(sources, 1):
+                    filename = source['source']
+                    score = source['score']
+                    # Create clickable link to documentation page
+                    doc_link = f"/documentation#{filename.replace('.md', '').lower()}"
+                    answer_parts.append(f"**[{i}]** [{filename}]({doc_link}) (relevance: {score:.2f})")
+            else:
+                answer_parts.append("### 📚 Document Sources")
+                answer_parts.append("")
+                answer_parts.append("No specific document sources found for this query.")
             
-            # Add MeTTa citations if available
-            if metta_citations:
+            # Add MeTTa citations - always present when MeTTa is enabled
+            if self.metta_enabled and metta_citations:
                 answer_parts.append("")
                 answer_parts.append("### 🧠 MeTTa Atom Citations")
                 answer_parts.append("")
@@ -349,6 +356,12 @@ class SimpleRAG:
                         answer_parts.append(f"• [{citation}](/documentation#api-reference)")
                     else:
                         answer_parts.append(f"• {citation}")
+            elif self.metta_enabled:
+                # Show MeTTa section even when no citations found
+                answer_parts.append("")
+                answer_parts.append("### 🧠 MeTTa Atom Citations")
+                answer_parts.append("")
+                answer_parts.append("No specific MeTTa patterns matched this query.")
             
             answer = "\n".join(answer_parts)
             

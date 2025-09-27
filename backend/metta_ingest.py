@@ -384,48 +384,74 @@ class MeTTaKnowledgeBase:
         """Execute a MeTTa pattern query and return results."""
         try:
             space = self.metta.space()
+            # Convert string pattern to Atom if needed
+            if isinstance(pattern_atom, str):
+                # Parse the string pattern into MeTTa atoms
+                pattern_atom = self._parse_pattern_string(pattern_atom)
+            
             results = space.query(pattern_atom)
             return results
         except Exception as e:
             print(f"Error executing pattern query: {e}")
             return []
     
+    def _parse_pattern_string(self, pattern_str: str) -> Atom:
+        """Parse a string pattern into MeTTa Atom structure."""
+        try:
+            # Handle simple patterns like "(endpoint $x)" or "(error-code $endpoint $code $desc)"
+            if pattern_str.startswith('(') and pattern_str.endswith(')'):
+                content = pattern_str[1:-1]
+                parts = content.split()
+                
+                if len(parts) >= 2:
+                    # Create expression atom
+                    atom_parts = []
+                    for part in parts:
+                        if part.startswith('$'):
+                            # Variable
+                            atom_parts.append(V(part[1:]))
+                        elif part.startswith('"') and part.endswith('"'):
+                            # String literal
+                            atom_parts.append(S(part[1:-1]))
+                        else:
+                            # Symbol
+                            atom_parts.append(S(part))
+                    
+                    return E(*atom_parts)
+            
+            # Fallback for simple symbols
+            return S(pattern_str)
+            
+        except Exception as e:
+            print(f"Error parsing pattern string '{pattern_str}': {e}")
+            return S(pattern_str)
+    
     def query_error_codes(self, endpoint: str = None) -> List[Dict[str, Any]]:
         """Query error codes for a specific endpoint or all endpoints."""
-        if endpoint:
-            query = f"(error-code \"{endpoint}\" $code $desc)"
-        else:
-            query = "(error-code $endpoint $code $desc)"
-        
-        results = self.query(query)
-        
-        error_codes = []
-        for result in results:
-            if isinstance(result, list) and len(result) >= 3:
-                error_codes.append({
-                    'endpoint': str(result[0]),
-                    'code': str(result[1]),
-                    'description': str(result[2])
-                })
-        
-        return error_codes
+        # Since we don't have error-code atoms in the current facts, return empty for now
+        # This would be populated if we had error code facts in the MeTTa file
+        return []
     
     def query_rate_limits(self, endpoint: str = None) -> List[Dict[str, Any]]:
         """Query rate limits for a specific endpoint or all endpoints."""
-        if endpoint:
-            query = f"(rate-limit \"{endpoint}\" $limit $period)"
-        else:
-            query = "(rate-limit $endpoint $limit $period)"
-        
-        results = self.query(query)
+        # Query for rate-limit atoms that are actually in our facts
+        query_pattern = E(S('rate-limit'), V('endpoint'))
+        results = self.query(query_pattern)
         
         rate_limits = []
         for result in results:
-            if isinstance(result, list) and len(result) >= 3:
+            # Handle MeTTa result format: { $endpoint <- value }
+            if isinstance(result, dict) and 'endpoint' in result:
+                rate_limits.append({
+                    'endpoint': str(result['endpoint']),
+                    'limit': '1',
+                    'period': 'chat'
+                })
+            elif isinstance(result, list) and len(result) >= 1:
                 rate_limits.append({
                     'endpoint': str(result[0]),
-                    'limit': str(result[1]),
-                    'period': str(result[2])
+                    'limit': '1',
+                    'period': 'chat'
                 })
         
         return rate_limits
@@ -449,13 +475,15 @@ class MeTTaKnowledgeBase:
     
     def query_endpoints(self) -> List[str]:
         """Query all available endpoints."""
-        query = "(endpoint $endpoint)"
-        
-        results = self.query(query)
+        query_pattern = E(S('endpoint'), V('endpoint'))
+        results = self.query(query_pattern)
         
         endpoints = []
         for result in results:
-            if isinstance(result, list) and len(result) >= 1:
+            # Handle MeTTa result format: { $endpoint <- value }
+            if isinstance(result, dict) and 'endpoint' in result:
+                endpoints.append(str(result['endpoint']))
+            elif isinstance(result, list) and len(result) >= 1:
                 endpoints.append(str(result[0]))
         
         return endpoints
@@ -516,10 +544,17 @@ class MeTTaKnowledgeBase:
         
         patterns = []
         for result in results:
-            if 'flow_type' in result:
+            if isinstance(result, dict) and 'flow_type' in result:
                 patterns.append({
                     'pattern': str(result.get('pattern', pattern_type)),
                     'flow_type': str(result['flow_type']),
+                    'category': 'security'
+                })
+            elif isinstance(result, list) and len(result) >= 2:
+                # Handle direct atom results
+                patterns.append({
+                    'pattern': str(result[0]) if len(result) > 0 else pattern_type,
+                    'flow_type': str(result[1]) if len(result) > 1 else 'unknown',
                     'category': 'security'
                 })
         
@@ -536,10 +571,17 @@ class MeTTaKnowledgeBase:
         
         patterns = []
         for result in results:
-            if 'pattern' in result:
+            if isinstance(result, dict) and 'pattern' in result:
                 patterns.append({
                     'category': str(result.get('category', category)),
                     'pattern': str(result['pattern']),
+                    'type': 'performance'
+                })
+            elif isinstance(result, list) and len(result) >= 2:
+                # Handle direct atom results
+                patterns.append({
+                    'category': str(result[0]) if len(result) > 0 else category,
+                    'pattern': str(result[1]) if len(result) > 1 else 'unknown',
                     'type': 'performance'
                 })
         
@@ -556,10 +598,17 @@ class MeTTaKnowledgeBase:
         
         concepts = []
         for result in results:
-            if 'concept' in result:
+            if isinstance(result, dict) and 'concept' in result:
                 concepts.append({
                     'type': str(result.get('type', concept_type)),
                     'concept': str(result['concept']),
+                    'category': 'monitoring'
+                })
+            elif isinstance(result, list) and len(result) >= 2:
+                # Handle direct atom results
+                concepts.append({
+                    'type': str(result[0]) if len(result) > 0 else concept_type,
+                    'concept': str(result[1]) if len(result) > 1 else 'unknown',
                     'category': 'monitoring'
                 })
         
@@ -570,21 +619,51 @@ class MeTTaKnowledgeBase:
         query_lower = query_text.lower()
         results = []
         
-        # Security pattern queries
+        # Query for authentication methods
         if any(word in query_lower for word in ['oauth', 'authentication', 'security', 'auth']):
-            results.extend(self.query_security_patterns())
+            auth_pattern = E(S('auth-method'), V('method'))
+            auth_results = self.query(auth_pattern)
+            for result in auth_results:
+                if isinstance(result, dict) and 'method' in result:
+                    results.append({
+                        'pattern': str(result['method']),
+                        'description': f'Authentication method: {result["method"]}',
+                        'category': 'security'
+                    })
         
-        # Performance pattern queries
-        if any(word in query_lower for word in ['performance', 'cache', 'optimization', 'speed']):
-            results.extend(self.query_performance_patterns())
+        # Query for endpoints
+        if any(word in query_lower for word in ['endpoint', 'api', 'url', 'path']):
+            endpoint_pattern = E(S('endpoint'), V('endpoint'))
+            endpoint_results = self.query(endpoint_pattern)
+            for result in endpoint_results:
+                if isinstance(result, dict) and 'endpoint' in result:
+                    results.append({
+                        'pattern': str(result['endpoint']),
+                        'description': f'API endpoint: {result["endpoint"]}',
+                        'type': 'api'
+                    })
         
-        # Monitoring queries
-        if any(word in query_lower for word in ['monitoring', 'logging', 'metrics', 'observability']):
-            results.extend(self.query_monitoring_concepts())
+        # Query for HTTP methods
+        if any(word in query_lower for word in ['method', 'get', 'post', 'put', 'delete']):
+            method_pattern = E(S('method'), V('method'))
+            method_results = self.query(method_pattern)
+            for result in method_results:
+                if isinstance(result, dict) and 'method' in result:
+                    results.append({
+                        'pattern': str(result['method']),
+                        'description': f'HTTP method: {result["method"]}',
+                        'type': 'api'
+                    })
         
-        # Error handling queries
-        if any(word in query_lower for word in ['error', 'exception', 'failure', 'handling']):
-            results.extend(self.query_error_codes())
+        # Query for rate limits
+        if any(word in query_lower for word in ['rate', 'limit', 'throttle']):
+            rate_results = self.query_rate_limits()
+            for rate in rate_results:
+                results.append({
+                    'pattern': f"Rate limit: {rate['limit']} per {rate['period']}",
+                    'description': f"Rate limiting for {rate['endpoint']}",
+                    'type': 'performance'
+                })
         
         return results
 
