@@ -47,7 +47,19 @@ export default function Documentation() {
 
   // Auto-open chat when navigating to documentation
   useEffect(() => {
-    openChat();
+    // Check if we should keep chat open (e.g., when navigating from citations)
+    const keepOpen = localStorage.getItem('keepChatOpen') === 'true';
+    if (keepOpen) {
+      openChat();
+      // Clean up the flag after opening chat
+      localStorage.removeItem('keepChatOpen');
+    } else {
+      // Only auto-open if chat was previously open
+      const chatWasOpen = localStorage.getItem('chatOpen') === 'true';
+      if (chatWasOpen) {
+        openChat();
+      }
+    }
   }, [openChat]);
 
   return (
