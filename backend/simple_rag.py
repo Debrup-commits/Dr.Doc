@@ -153,8 +153,14 @@ class SimpleRAG:
                     self.metta_kb.load_atoms_from_file(atoms_file)
                     logger.info("✅ MeTTa knowledge base initialized with atoms")
                 else:
-                    logger.warning("⚠️  MeTTa atoms file not found, running without MeTTa reasoning")
-                    self.metta_enabled = False
+                    # Try alternative path
+                    atoms_file = "api_facts.metta"
+                    if os.path.exists(atoms_file):
+                        self.metta_kb.load_atoms_from_file(atoms_file)
+                        logger.info("✅ MeTTa knowledge base initialized with atoms")
+                    else:
+                        logger.warning("⚠️  MeTTa atoms file not found, running without MeTTa reasoning")
+                        self.metta_enabled = False
             except Exception as e:
                 logger.error(f"❌ Failed to initialize MeTTa: {e}")
                 self.metta_enabled = False

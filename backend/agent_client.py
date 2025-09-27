@@ -1,204 +1,164 @@
 #!/usr/bin/env python3
 """
-Client for communicating with the Document Q&A uAgent
-Provides a simple interface for frontend applications
+Client for communicating with the ASI:One RAG uAgent
 """
 
 import asyncio
-import json
+import logging
 from typing import Dict, Any, Optional
 from uagents import Agent
-from doc_qa_agent import QuestionRequest, QuestionResponse, HealthCheck, ErrorResponse
+from uagents.query import query
 
-class DocumentQAClient:
-    """Client for communicating with the Document Q&A agent"""
+# Import message models
+from asi_one_agent import QuestionRequest, QuestionResponse, HealthCheck, HealthResponse
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+class ASIOneRAGClient:
+    """Client for communicating with the ASI:One RAG uAgent"""
     
-    def __init__(self, agent_address: str):
-        self.agent_address = agent_address
-        self.client_agent = Agent(name="doc-qa-client", seed="client_seed_phrase")
+    def __init__(self, agent_address: str = None):
+        """
+        Initialize the client
+        
+        Args:
+            agent_address: The address of the ASI:One RAG agent
+        """
+        # Default agent address (will be set when agent starts)
+        self.agent_address = agent_address or "agent1q..."
+        self.agent = Agent(name="client", seed="client_seed")
     
-    async def ask_question(self, question: str, user_id: str = None, session_id: str = None) -> Dict[str, Any]:
-        """Ask a question to the Document Q&A agent"""
+    async def ask_question(self, question: str, session_id: str = None) -> Dict[str, Any]:
+        """
+        Ask a question to the ASI:One RAG agent
+        
+        Args:
+            question: The question to ask
+            session_id: Optional session ID
+            
+        Returns:
+            Dictionary containing the response
+        """
         try:
             # Create request
             request = QuestionRequest(
                 question=question,
-                user_id=user_id,
                 session_id=session_id
             )
             
-            # Send request and wait for response
-            # Note: This is a simplified implementation - in production you'd use proper message passing
-            # For now, we'll simulate the response by calling the QA system directly
-            from app_agno_hybrid import AgnoHybridQASystem
-            qa_system = AgnoHybridQASystem()
-            result = qa_system.query(question)
-            
-            response = QuestionResponse(
-                answer=result.get('answer', 'No answer available'),
-                sources=result.get('sources', []),
-                facts=result.get('facts', []),
-                source=result.get('source', 'unknown'),
-                confidence=result.get('confidence', 0.0),
-                reasoning=result.get('reasoning', 'No reasoning provided'),
-                model_source=result.get('model_source', 'unknown'),
-                context_used=result.get('context_used', 0),
-                metta_details=result.get('metta_details', {}),
-                rag_details=result.get('rag_details', {}),
-                response_time=0.0
+            # Query the agent
+            response = await query(
+                destination=self.agent_address,
+                message=request,
+                response_type=QuestionResponse,
+                timeout=30.0
             )
             
-            if isinstance(response, QuestionResponse):
-                return {
-                    'answer': response.answer,
-                    'sources': response.sources,
-                    'facts': response.facts,
-                    'source': response.source,
-                    'confidence': response.confidence,
-                    'reasoning': response.reasoning,
-                    'model_source': response.model_source,
-                    'context_used': response.context_used,
-                    'metta_details': response.metta_details,
-                    'rag_details': response.rag_details,
-                    'response_time': response.response_time,
-                    'success': True
-                }
-            elif isinstance(response, ErrorResponse):
-                return {
-                    'error': response.error,
-                    'error_type': response.error_type,
-                    'suggestion': response.suggestion,
-                    'success': False
-                }
-            else:
-                return {
-                    'error': 'Unknown response type',
-                    'success': False
-                }
-                
-        except asyncio.TimeoutError:
             return {
-                'error': 'Request timeout - agent may be busy or unavailable',
-                'error_type': 'timeout',
-                'suggestion': 'Please try again later or check if the agent is running',
-                'success': False
+                "answer": response.answer,
+                "sources": response.sources,
+                "metta_reasoning": response.metta_reasoning,
+                "success": response.success,
+                "error": response.error
             }
+            
         except Exception as e:
+            logger.error(f"Error asking question: {e}")
             return {
-                'error': str(e),
-                'error_type': 'client_error',
-                'suggestion': 'Please check your connection and try again',
-                'success': False
+                "answer": "I apologize, but I encountered an error while processing your question. Please try again.",
+                "success": False,
+                "error": str(e)
             }
     
     async def health_check(self) -> Dict[str, Any]:
-        """Check the health of the Document Q&A agent"""
+        """
+        Check the health of the ASI:One RAG agent
+        
+        Returns:
+            Dictionary containing health status
+        """
         try:
-            request = HealthCheck(
-                status="check",
-                agent_address="",
-                rag_documents_loaded=0,
-                metta_atoms_loaded=0,
-                vector_store_ready=False,
-                uptime=0.0
+            # Create health check request
+            request = HealthCheck()
+            
+            # Query the agent
+            response = await query(
+                destination=self.agent_address,
+                message=request,
+                response_type=HealthResponse,
+                timeout=10.0
             )
             
-            # Simplified health check - in production this would communicate with the actual agent
-            from app_agno_hybrid import AgnoHybridQASystem
-            qa_system = AgnoHybridQASystem()
-            
-            response = HealthCheck(
-                status="healthy",
-                agent_address=self.agent_address,
-                rag_documents_loaded=qa_system.agno_rag.knowledge.count() if qa_system.agno_rag.knowledge else 0,
-                metta_atoms_loaded=25,  # From our MeTTa knowledge base
-                vector_store_ready=qa_system.agno_rag.knowledge is not None,
-                uptime=100.0  # Simulated uptime
-            )
-            
-            if isinstance(response, HealthCheck):
-                return {
-                    'status': response.status,
-                    'agent_address': response.agent_address,
-                    'rag_documents_loaded': response.rag_documents_loaded,
-                    'metta_atoms_loaded': response.metta_atoms_loaded,
-                    'vector_store_ready': response.vector_store_ready,
-                    'uptime': response.uptime,
-                    'success': True
-                }
-            else:
-                return {
-                    'status': 'unknown',
-                    'error': 'Unexpected response type',
-                    'success': False
-                }
-                
-        except asyncio.TimeoutError:
             return {
-                'status': 'unreachable',
-                'error': 'Health check timeout',
-                'success': False
+                "status": response.status,
+                "system": response.system,
+                "embedder": response.embedder,
+                "database": response.database,
+                "metta_enabled": response.metta_enabled
             }
+            
         except Exception as e:
+            logger.error(f"Error checking health: {e}")
             return {
-                'status': 'error',
-                'error': str(e),
-                'success': False
+                "status": "unhealthy",
+                "error": str(e)
             }
 
 # Synchronous wrapper for Flask integration
-class SyncDocumentQAClient:
-    """Synchronous wrapper for the Document Q&A client"""
+class SyncASIOneRAGClient:
+    """Synchronous wrapper for the ASI:One RAG client"""
     
-    def __init__(self, agent_address: str):
-        self.agent_address = agent_address
-        self.client = DocumentQAClient(agent_address)
+    def __init__(self, agent_address: str = None):
+        self.client = ASIOneRAGClient(agent_address)
     
-    def ask_question(self, question: str, user_id: str = None, session_id: str = None) -> Dict[str, Any]:
-        """Synchronous wrapper for asking questions"""
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
+    def ask_question(self, question: str, session_id: str = None) -> Dict[str, Any]:
+        """Synchronous version of ask_question"""
         try:
-            return loop.run_until_complete(
-                self.client.ask_question(question, user_id, session_id)
-            )
-        finally:
-            loop.close()
+            # Create new event loop for this thread
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            try:
+                return loop.run_until_complete(self.client.ask_question(question, session_id))
+            finally:
+                loop.close()
+        except Exception as e:
+            logger.error(f"Error in ask_question: {e}")
+            return {
+                "answer": "I apologize, but I encountered an error while processing your question. Please try again.",
+                "success": False,
+                "error": str(e)
+            }
     
     def health_check(self) -> Dict[str, Any]:
-        """Synchronous wrapper for health checks"""
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
+        """Synchronous version of health_check"""
         try:
-            return loop.run_until_complete(
-                self.client.health_check()
-            )
-        finally:
-            loop.close()
+            # Create new event loop for this thread
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            try:
+                return loop.run_until_complete(self.client.health_check())
+            finally:
+                loop.close()
+        except Exception as e:
+            logger.error(f"Error in health_check: {e}")
+            return {
+                "status": "unhealthy",
+                "error": str(e)
+            }
 
-# Test function
-async def test_agent_client():
-    """Test the agent client functionality"""
-    print("🧪 Testing Document Q&A Agent Client...")
-    
-    # You'll need to replace this with the actual agent address
-    agent_address = "agent1q..."  # Replace with actual address
-    
-    client = DocumentQAClient(agent_address)
-    
-    try:
-        # Test health check
-        print("🔍 Testing health check...")
-        health = await client.health_check()
-        print(f"Health status: {health}")
-        
-        # Test question
-        print("📝 Testing question...")
-        response = await client.ask_question("What OAuth authentication flows are supported?")
-        print(f"Response: {response}")
-        
-    except Exception as e:
-        print(f"❌ Test failed: {e}")
+# Global client instance
+_global_client = None
 
-if __name__ == "__main__":
-    asyncio.run(test_agent_client())
+def get_client(agent_address: str = None) -> SyncASIOneRAGClient:
+    """Get or create the global client instance"""
+    global _global_client
+    if _global_client is None:
+        _global_client = SyncASIOneRAGClient(agent_address)
+    return _global_client
+
+def set_agent_address(agent_address: str):
+    """Set the agent address for the global client"""
+    global _global_client
+    _global_client = SyncASIOneRAGClient(agent_address)

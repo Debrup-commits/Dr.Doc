@@ -5,9 +5,10 @@ import React, { createContext, useContext, useState, useCallback } from 'react';
 export interface Message {
   id: string;
   text: string;
-  sender: 'user' | 'agent';
+  sender: 'user' | 'agent' | 'system';
   timestamp: Date;
   status?: 'sending' | 'sent' | 'error';
+  type?: 'message' | 'session-start' | 'session-end';
 }
 
 interface ChatContextType {
@@ -40,25 +41,48 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [messages, setMessages] = useState<Message[]>(() => {
     if (typeof window !== 'undefined') {
       const savedMessages = localStorage.getItem('chatMessages');
+      const lastSessionId = localStorage.getItem('lastSessionId');
+      const currentSessionId = Date.now().toString();
+      
       if (savedMessages) {
         try {
           const parsed = JSON.parse(savedMessages);
           // Convert timestamp strings back to Date objects
-          return parsed.map((msg: any) => ({
+          const messages = parsed.map((msg: any) => ({
             ...msg,
             timestamp: new Date(msg.timestamp)
           }));
+          
+          // Add session start message if this is a new session
+          if (lastSessionId !== currentSessionId) {
+            const sessionStartMessage: Message = {
+              id: `session-${currentSessionId}`,
+              text: `🔄 New session started at ${new Date().toLocaleString()}`,
+              sender: 'system',
+              timestamp: new Date(),
+              type: 'session-start'
+            };
+            localStorage.setItem('lastSessionId', currentSessionId);
+            return [sessionStartMessage, ...messages];
+          }
+          
+          return messages;
         } catch (error) {
           console.error('Failed to parse saved messages:', error);
         }
       }
+      
+      // First time user - set session ID
+      localStorage.setItem('lastSessionId', currentSessionId);
     }
+    
     return [
       {
         id: '1',
         text: 'Hello! I\'m your AI agent. How can I help you today?',
         sender: 'agent',
         timestamp: new Date(),
+        type: 'message'
       },
     ];
   });
@@ -95,6 +119,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       ...message,
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       timestamp: new Date(),
+      type: message.type || 'message'
     };
     setMessages(prev => {
       const updatedMessages = [...prev, newMessage];
@@ -107,18 +132,28 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const clearMessages = useCallback(() => {
+    const currentSessionId = Date.now().toString();
     const defaultMessages = [
+      {
+        id: `session-${currentSessionId}`,
+        text: `🔄 New session started at ${new Date().toLocaleString()}`,
+        sender: 'system' as const,
+        timestamp: new Date(),
+        type: 'session-start' as const
+      },
       {
         id: '1',
         text: 'Hello! I\'m your AI agent. How can I help you today?',
         sender: 'agent' as const,
         timestamp: new Date(),
+        type: 'message' as const
       },
     ];
     setMessages(defaultMessages);
-    // Clear messages from localStorage
+    // Clear messages from localStorage and set new session ID
     if (typeof window !== 'undefined') {
       localStorage.setItem('chatMessages', JSON.stringify(defaultMessages));
+      localStorage.setItem('lastSessionId', currentSessionId);
     }
   }, []);
 

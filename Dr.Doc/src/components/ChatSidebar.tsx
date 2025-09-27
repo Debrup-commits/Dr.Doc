@@ -131,60 +131,82 @@ export default function ChatSidebar() {
         <>
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4 h-96">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'} message-fade-in`}
-              >
-                <div
-                  className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                    message.sender === 'user'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 dark:bg-slate-700 text-gray-900 dark:text-gray-100'
-                  }`}
-                >
-                  <div className="flex items-start space-x-2">
-                    {message.sender === 'agent' && (
-                      <Bot size={16} className="mt-1 flex-shrink-0" />
-                    )}
-                    {message.sender === 'user' && (
-                      <User size={16} className="mt-1 flex-shrink-0" />
-                    )}
-                    <div className="flex-1">
-                      <div className="text-sm prose prose-sm max-w-none dark:prose-invert">
-                        <ReactMarkdown
-                          remarkPlugins={[remarkGfm]}
-                          rehypePlugins={[rehypeRaw]}
-                          components={{
-                            // Custom component overrides for styling
-                            h1: ({ children }) => <h1 className="text-lg font-bold mb-2">{children}</h1>,
-                            h2: ({ children }) => <h2 className="text-base font-semibold mb-2">{children}</h2>,
-                            h3: ({ children }) => <h3 className="text-sm font-semibold mb-1">{children}</h3>,
-                            p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                            ul: ({ children }) => <ul className="list-disc list-inside mb-2 space-y-1">{children}</ul>,
-                            ol: ({ children }) => <ol className="list-decimal list-inside mb-2 space-y-1">{children}</ol>,
-                            li: ({ children }) => <li className="text-sm">{children}</li>,
-                            code: ({ children }) => <code className="bg-gray-100 dark:bg-gray-700 px-1 py-0.5 rounded text-xs font-mono">{children}</code>,
-                            pre: ({ children }) => <pre className="bg-gray-100 dark:bg-gray-700 p-2 rounded text-xs font-mono overflow-x-auto mb-2">{children}</pre>,
-                            blockquote: ({ children }) => <blockquote className="border-l-4 border-gray-300 dark:border-gray-600 pl-3 italic mb-2">{children}</blockquote>,
-                            strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
-                            em: ({ children }) => <em className="italic">{children}</em>,
-                          }}
-                        >
-                          {message.text}
-                        </ReactMarkdown>
+            {messages.map((message) => {
+              const isUser = message.sender === 'user';
+              const isAgent = message.sender === 'agent';
+              const isSystem = message.sender === 'system';
+              const isSessionStart = message.type === 'session-start';
+              
+              // Special styling for session start messages
+              if (isSystem && isSessionStart) {
+                return (
+                  <div key={message.id} className="flex justify-center mb-4 message-fade-in">
+                    <div className="bg-blue-500/20 border border-blue-400/30 rounded-lg px-4 py-2 text-center">
+                      <div className="flex items-center justify-center space-x-2">
+                        <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                        <span className="text-sm text-blue-600 dark:text-blue-300 font-medium">{message.text}</span>
+                        <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
                       </div>
-                      <p className="text-xs opacity-70 mt-1">
-                        {message.timestamp.toLocaleTimeString([], { 
-                          hour: '2-digit', 
-                          minute: '2-digit' 
-                        })}
-                      </p>
+                    </div>
+                  </div>
+                );
+              }
+              
+              return (
+                <div
+                  key={message.id}
+                  className={`flex ${isUser ? 'justify-end' : 'justify-start'} message-fade-in`}
+                >
+                  <div
+                    className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                      isUser
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 dark:bg-slate-700 text-gray-900 dark:text-gray-100'
+                    }`}
+                  >
+                    <div className="flex items-start space-x-2">
+                      {isAgent && (
+                        <Bot size={16} className="mt-1 flex-shrink-0" />
+                      )}
+                      {isUser && (
+                        <User size={16} className="mt-1 flex-shrink-0" />
+                      )}
+                      <div className="flex-1">
+                        <div className="text-sm prose prose-sm max-w-none dark:prose-invert">
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            rehypePlugins={[rehypeRaw]}
+                            components={{
+                              // Custom component overrides for styling
+                              h1: ({ children }) => <h1 className="text-lg font-bold mb-2">{children}</h1>,
+                              h2: ({ children }) => <h2 className="text-base font-semibold mb-2">{children}</h2>,
+                              h3: ({ children }) => <h3 className="text-sm font-semibold mb-1">{children}</h3>,
+                              p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                              ul: ({ children }) => <ul className="list-disc list-inside mb-2 space-y-1">{children}</ul>,
+                              ol: ({ children }) => <ol className="list-decimal list-inside mb-2 space-y-1">{children}</ol>,
+                              li: ({ children }) => <li className="text-sm">{children}</li>,
+                              code: ({ children }) => <code className="bg-gray-100 dark:bg-gray-700 px-1 py-0.5 rounded text-xs font-mono">{children}</code>,
+                              pre: ({ children }) => <pre className="bg-gray-100 dark:bg-gray-700 p-2 rounded text-xs font-mono overflow-x-auto mb-2">{children}</pre>,
+                              blockquote: ({ children }) => <blockquote className="border-l-4 border-gray-300 dark:border-gray-600 pl-3 italic mb-2">{children}</blockquote>,
+                              strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                              em: ({ children }) => <em className="italic">{children}</em>,
+                            }}
+                          >
+                            {message.text}
+                          </ReactMarkdown>
+                        </div>
+                        <p className="text-xs opacity-70 mt-1">
+                          {message.timestamp.toLocaleTimeString([], { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                          })}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
             {isLoading && (
               <div className="flex justify-start">
                 <div className="bg-gray-100 dark:bg-slate-700 text-gray-900 dark:text-gray-100 px-4 py-2 rounded-lg">

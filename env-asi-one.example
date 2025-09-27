@@ -1,0 +1,14 @@
+# ASI:One API Configuration
+ASI_ONE_API_KEY=your_asi_one_api_key_here
+
+# Database Configuration
+DATABASE_URL=postgresql://ai:ai@localhost:5532/ai
+
+# Agent Configuration
+AGENT_ADDRESS=agent1q...
+
+# Optional: MeTTa Configuration
+METTA_ENABLED=true
+METTA_ATOMS_FILE=api_facts.metta
+
+

@@ -1,0 +1,29 @@
+# uAgents framework
+uagents>=0.8.0
+
+# OpenAI client for ASI:One
+openai>=1.0.0
+
+# Flask for API
+flask>=2.0.0
+flask-cors>=4.0.0
+
+# Database
+psycopg2-binary>=2.9.0
+
+# Embeddings
+sentence-transformers>=2.2.0
+
+# MeTTa integration
+hyperon>=0.1.0
+
+# Utilities
+python-dotenv>=1.0.0
+requests>=2.28.0
+
+# Development
+pytest>=7.0.0
+black>=22.0.0
+flake8>=5.0.0
+
+
