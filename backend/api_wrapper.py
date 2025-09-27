@@ -1,29 +1,57 @@
 #!/usr/bin/env python3
 """
-MCP API Wrapper for Frontend
-Simple HTTP API that wraps the MCP server endpoints for frontend access
+Dr.Doc API Wrapper
+
+Clean HTTP API wrapper that exposes MCP server endpoints for frontend integration.
+Provides RESTful endpoints for document processing and Q&A functionality.
+
+Author: Dr.Doc Team
 """
 
 import os
 import logging
 import asyncio
+from pathlib import Path
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 
-# Import our MCP server functions
+# Local imports
 from mcp_server import process_documents, ask_dr_doc
 
-# Load environment variables
+# Configuration
 load_dotenv()
-
-# Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Initialize Flask app
+# Flask application
 app = Flask(__name__)
 CORS(app)
+
+# Initialize RAG system at server startup
+def initialize_rag_at_startup():
+    """Initialize RAG system when server starts up"""
+    try:
+        from mcp_server import rag_system
+        if rag_system is None:
+            print("🔄 Initializing RAG pipeline at server startup...")
+            print("📡 Loading BGE embeddings and preparing the system for fast responses")
+            
+            from simple_rag import SimpleRAG
+            import mcp_server
+            mcp_server.rag_system = SimpleRAG()
+            
+            print("✅ RAG pipeline is ready to use!")
+            print("🚀 Ask endpoint will respond faster now")
+            logger.info("✅ RAG system initialized at server startup")
+        else:
+            print("ℹ️ RAG system was already initialized")
+    except Exception as e:
+        print(f"⚠️ Could not initialize RAG system at startup: {e}")
+        logger.warning(f"Could not initialize RAG system at startup: {e}")
+
+# Initialize RAG system
+initialize_rag_at_startup()
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
@@ -111,18 +139,61 @@ def ask_dr_doc_endpoint():
             "error": str(e)
         }), 500
 
+
+def check_system_status():
+    """Check if MeTTa files and RAG pipelines are properly set up"""
+    try:
+        # Check if MeTTa knowledge base exists
+        metta_file = Path("api_facts.metta")
+        metta_available = metta_file.exists() and metta_file.stat().st_size > 0
+        
+        # Check if RAG pipeline has documents
+        rag_available = False
+        try:
+            import psycopg2
+            conn = psycopg2.connect(
+                host="localhost", port="5532", database="ai", 
+                user="ai", password="ai"
+            )
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(*) FROM documents")
+            doc_count = cursor.fetchone()[0]
+            cursor.close()
+            conn.close()
+            rag_available = doc_count > 0
+        except Exception as e:
+            logger.warning(f"Could not check database status: {e}")
+        
+        return {
+            "docs_processed": metta_available and rag_available,
+            "system_initialized": metta_available and rag_available,
+            "metta_available": metta_available,
+            "rag_available": rag_available
+        }
+        
+    except Exception as e:
+        logger.error(f"Error checking system status: {e}")
+        return {
+            "docs_processed": False,
+            "system_initialized": False,
+            "metta_available": False,
+            "rag_available": False
+        }
+
 @app.route('/api/status', methods=['GET'])
 def system_status():
-    """Get system status"""
+    """Get comprehensive system status"""
     try:
-        from mcp_server import processing_status
+        status_info = check_system_status()
         
         return jsonify({
             "success": True,
             "status": {
-                "system_initialized": processing_status["initialized"],
+                "system_initialized": status_info["system_initialized"],
+                "docs_processed": status_info["docs_processed"],
                 "asi_one_configured": bool(os.getenv("ASI_ONE_API_KEY")),
-                "docs_processed": processing_status["initialized"]
+                "metta_available": status_info["metta_available"],
+                "rag_available": status_info["rag_available"]
             }
         }), 200
         

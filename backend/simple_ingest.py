@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """
-Simple Document Ingestion for Agno RAG
-Processes markdown files and stores them in the knowledge base
+Dr.Doc Document Ingestion
+
+Clean document processing utilities for RAG pipeline.
+Handles markdown parsing, database storage, and embedding generation.
+
+Author: Dr.Doc Team
 """
 
 import os
@@ -12,7 +16,7 @@ from pathlib import Path
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 
-# Load environment variables
+# Configuration
 load_dotenv()
 
 def process_markdown_files(docs_dir: str):
