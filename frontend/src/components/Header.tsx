@@ -18,10 +18,10 @@ export default function Header() {
   ];
 
   return (
-    <header className="bg-slate-800 shadow-lg fixed w-full top-0 z-50">
+    <header className="bg-white dark:bg-slate-800 shadow-lg fixed w-full top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
-          <Link href="/" className="text-2xl font-bold text-emerald-400">
+          <Link href="/" className="text-2xl font-bold text-blue-600 dark:text-blue-400">
             ASI:One
           </Link>
           
@@ -33,8 +33,8 @@ export default function Header() {
                 href={item.href}
                 className={`font-medium transition-colors duration-200 ${
                   pathname === item.href
-                    ? 'text-emerald-400'
-                    : 'text-slate-300 hover:text-emerald-400'
+                    ? 'text-blue-600 dark:text-blue-400'
+                    : 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400'
                 }`}
               >
                 {item.label}
@@ -46,7 +46,7 @@ export default function Header() {
           <div className="hidden md:flex items-center space-x-4">
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors duration-200"
+              className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200"
               aria-label="Toggle theme"
             >
               {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
@@ -54,7 +54,7 @@ export default function Header() {
             
             <Link
               href="/login"
-              className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200"
             >
               Login
             </Link>
@@ -64,7 +64,7 @@ export default function Header() {
           <div className="md:hidden flex items-center space-x-2">
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors duration-200"
+              className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200"
               aria-label="Toggle theme"
             >
               {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
@@ -72,7 +72,7 @@ export default function Header() {
             
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors duration-200"
+              className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200"
               aria-label="Toggle mobile menu"
             >
               {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -82,7 +82,7 @@ export default function Header() {
 
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
-          <div className="md:hidden py-4">
+          <div className="md:hidden border-t border-gray-200 dark:border-slate-700 py-4">
             <nav className="flex flex-col space-y-4">
               {navItems.map((item) => (
                 <Link
@@ -91,8 +91,8 @@ export default function Header() {
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={`font-medium transition-colors duration-200 py-2 ${
                     pathname === item.href
-                      ? 'text-emerald-400'
-                      : 'text-slate-300 hover:text-emerald-400'
+                      ? 'text-blue-600 dark:text-blue-400'
+                      : 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400'
                   }`}
                 >
                   {item.label}
@@ -101,7 +101,7 @@ export default function Header() {
               <Link
                 href="/login"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 text-center"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 text-center"
               >
                 Login
               </Link>

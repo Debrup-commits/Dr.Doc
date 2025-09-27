@@ -1,13 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { ChevronRight, Info, AlertTriangle } from 'lucide-react';
-import { useChat } from '@/contexts/ChatContext';
 
 export default function Documentation() {
   const [activeSection, setActiveSection] = useState('welcome');
-  const { openChat } = useChat();
 
   const sidebarItems = [
     {
@@ -44,11 +42,6 @@ export default function Documentation() {
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
-
-  // Auto-open chat when navigating to documentation
-  useEffect(() => {
-    openChat();
-  }, [openChat]);
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900">
@@ -180,7 +173,7 @@ export default function Documentation() {
               Getting Started
             </h2>
             <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
-              To begin using ASI:One, you&apos;ll need to sign up and obtain an API key. Follow these simple steps:
+              To begin using ASI:One, you'll need to sign up and obtain an API key. Follow these simple steps:
             </p>
             
             <ol className="list-decimal list-inside space-y-2 text-gray-600 dark:text-gray-300 mb-6">
@@ -238,7 +231,7 @@ export default function Documentation() {
             <ol className="list-decimal list-inside space-y-2 text-gray-600 dark:text-gray-300 mb-6">
               <li>Log into your ASI:One account</li>
               <li>Navigate to the API Keys section in your dashboard</li>
-              <li>Click &quot;Generate New API Key&quot;</li>
+              <li>Click "Generate New API Key"</li>
               <li>Copy and securely store your new API key</li>
               <li>Use the key in your API requests with the Authorization header</li>
             </ol>
@@ -253,7 +246,7 @@ export default function Documentation() {
               OpenAI Compatibility
             </h2>
             <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
-              ASI:One&apos;s API conforms to the OpenAI API specification, making it easy to integrate with existing OpenAI client libraries and tools. This compatibility ensures seamless migration and familiar development experience.
+              ASI:One's API conforms to the OpenAI API specification, making it easy to integrate with existing OpenAI client libraries and tools. This compatibility ensures seamless migration and familiar development experience.
             </p>
             
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
@@ -277,7 +270,7 @@ export default function Documentation() {
               Chat Completion Example
             </h2>
             <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
-              Here&apos;s a simple example of how to obtain a chat completion using the <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm">asi1-mini</code> model:
+              Here's a simple example of how to obtain a chat completion using the <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm">asi1-mini</code> model:
             </p>
             
             <div className="bg-gray-900 dark:bg-gray-800 text-gray-100 p-6 rounded-lg font-mono text-sm overflow-x-auto mb-6">
