@@ -18,6 +18,7 @@ from dotenv import load_dotenv
 
 # Local imports
 from mcp_server import process_documents, ask_dr_doc
+from rag_initializer import initialize_rag_system, auto_process_documents_if_needed, get_rag_system, get_metta_kb, get_processing_status
 
 # Configuration
 load_dotenv()
@@ -28,64 +29,42 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 CORS(app)
 
-# Initialize RAG system at server startup
-def initialize_rag_at_startup():
-    """Initialize RAG system when server starts up"""
+# Initialize RAG system at server startup using the independent initializer
+def initialize_system_at_startup():
+    """Initialize RAG system and documents when server starts up"""
     try:
-        from mcp_server import rag_system
-        if rag_system is None:
-            print("🔄 Initializing RAG pipeline at server startup...")
-            print("📡 Loading BGE embeddings and preparing the system for fast responses")
-            
-            from simple_rag import SimpleRAG
-            import mcp_server
-            mcp_server.rag_system = SimpleRAG()
-            
-            print("✅ RAG pipeline is ready to use!")
-            print("🚀 Ask endpoint will respond faster now")
-            logger.info("✅ RAG system initialized at server startup")
-        else:
-            print("ℹ️ RAG system was already initialized")
-    except Exception as e:
-        print(f"⚠️ Could not initialize RAG system at startup: {e}")
-        logger.warning(f"Could not initialize RAG system at startup: {e}")
-
-def auto_process_documents_if_needed():
-    """Auto-process documents if system status indicates they're needed"""
-    try:
-        print("🔍 Checking if documents need to be processed...")
-        status = check_system_status()
+        print("🚀 Starting RAG system initialization...")
+        logger.info("🚀 Starting RAG system initialization...")
         
-        # Check if any critical status fields are False
-        needs_processing = not status.get("docs_processed", False) or not status.get("system_initialized", False)
+        # Initialize RAG system
+        rag_system = initialize_rag_system()
         
-        if needs_processing:
-            print("📚 System needs document processing. Auto-processing documents...")
-            
-            # Default docs directory
-            docs_dir = "../docs"
-            docs_path = Path(docs_dir)
-            if docs_path.exists() and docs_path.is_dir():
-                print(f"🔄 Processing documents from: {docs_dir}")
-                
-                # Call the MCP server function to process documents
-                result = asyncio.run(process_documents(docs_dir))
-                print(f"✅ Auto-processing result: {result}")
-                logger.info(f"Auto-processed documents: {result}")
-            else:
-                print(f"⚠️ Docs directory not found or invalid: {docs_dir}")
-                print("   Please create the docs directory and add documents, then call /api/process-documents")
-                print("   System will be ready once documents are processed")
+        # Update the global RAG system in mcp_server
+        import mcp_server
+        mcp_server.rag_system = rag_system
+        mcp_server.metta_kb = get_metta_kb()
+        mcp_server.processing_status = get_processing_status()
+        
+        print("✅ RAG system initialization completed!")
+        logger.info("✅ RAG system initialization completed")
+        
+        # Auto-process documents if needed
+        print("🔍 Checking document processing status...")
+        docs_success = asyncio.run(auto_process_documents_if_needed())
+        
+        if docs_success:
+            print("🎯 System is fully ready for requests!")
+            logger.info("🎯 System is fully ready for requests")
         else:
-            print("✅ System is already fully initialized - no processing needed")
+            print("⚠️ System ready with warnings - check document processing")
+            logger.warning("System ready with warnings")
             
     except Exception as e:
-        print(f"⚠️ Could not auto-process documents: {e}")
-        logger.warning(f"Auto-processing failed: {e}")
+        print(f"⚠️ Could not initialize system at startup: {e}")
+        logger.warning(f"Could not initialize system at startup: {e}")
 
-# Initialize RAG system and auto-process documents if needed
-initialize_rag_at_startup()
-auto_process_documents_if_needed()
+# Initialize RAG system and documents
+initialize_system_at_startup()
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
@@ -177,33 +156,8 @@ def ask_dr_doc_endpoint():
 def check_system_status():
     """Check if MeTTa files and RAG pipelines are properly set up"""
     try:
-        # Check if MeTTa knowledge base exists
-        metta_file = Path("api_facts.metta")
-        metta_available = metta_file.exists() and metta_file.stat().st_size > 0
-        
-        # Check if RAG pipeline has documents
-        rag_available = False
-        try:
-            import psycopg2
-            conn = psycopg2.connect(
-                host="localhost", port="5532", database="ai", 
-                user="ai", password="ai"
-            )
-            cursor = conn.cursor()
-            cursor.execute("SELECT COUNT(*) FROM documents")
-            doc_count = cursor.fetchone()[0]
-            cursor.close()
-            conn.close()
-            rag_available = doc_count > 0
-        except Exception as e:
-            logger.warning(f"Could not check database status: {e}")
-        
-        return {
-            "docs_processed": metta_available and rag_available,
-            "system_initialized": metta_available and rag_available,
-            "metta_available": metta_available,
-            "rag_available": rag_available
-        }
+        # Use the status from the RAG initializer
+        return get_processing_status()
         
     except Exception as e:
         logger.error(f"Error checking system status: {e}")

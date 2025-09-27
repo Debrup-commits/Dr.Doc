@@ -79,6 +79,22 @@ def run_api_wrapper():
     except Exception as e:
         print(f"\n❌ API Wrapper failed: {e}")
 
+def run_rag_initializer():
+    """Run the RAG initializer to prepare the system"""
+    print("\n🚀 Starting RAG Pipeline Initializer...")
+    print("📍 This will initialize the RAG system and process documents")
+    print("📋 This step ensures optimal performance when serving requests")
+    
+    try:
+        from run_rag_initializer import main as init_main
+        return init_main()
+    except KeyboardInterrupt:
+        print("\n🛑 RAG initialization interrupted by user")
+        return 1
+    except Exception as e:
+        print(f"\n❌ RAG initialization failed: {e}")
+        return 1
+
 def run_uagent():
     """Run the uAgent with MCP integration"""
     print("\n🤖 Starting Dr.Doc uAgent...")
@@ -98,8 +114,8 @@ def main():
     parser = argparse.ArgumentParser(description="Dr.Doc System")
     parser.add_argument(
         "mode", 
-        choices=["mcp", "api", "uagent"], 
-        help="Mode to run: 'mcp' (standalone MCP server), 'api' (HTTP API wrapper), or 'uagent' (uAgent with MCP)"
+        choices=["init", "mcp", "api", "uagent"], 
+        help="Mode to run: 'init' (initialize RAG pipeline), 'mcp' (standalone MCP server), 'api' (HTTP API wrapper), or 'uagent' (uAgent with MCP)"
     )
     
     args = parser.parse_args()
@@ -111,7 +127,9 @@ def main():
     check_environment()
     
     # Run in requested mode
-    if args.mode == "mcp":
+    if args.mode == "init":
+        run_rag_initializer()
+    elif args.mode == "mcp":
         run_mcp_server()
     elif args.mode == "api":
         run_api_wrapper()
