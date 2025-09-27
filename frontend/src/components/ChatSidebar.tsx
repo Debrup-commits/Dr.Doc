@@ -30,20 +30,59 @@ export default function ChatSidebar() {
     }
   }, [isChatOpen]);
 
-  // Auto-open chat when clicking on citation links
+  // Clean up navigation flags when chat is manually closed
+  useEffect(() => {
+    if (!isChatOpen) {
+      // Only clean up if chat was manually closed (not due to navigation)
+      const wasNavigating = localStorage.getItem('navigatingToDocs') === 'true';
+      if (!wasNavigating) {
+        localStorage.removeItem('keepChatOpen');
+        localStorage.removeItem('navigatingToDocs');
+      }
+    }
+  }, [isChatOpen]);
+
+  // Auto-open chat when clicking on citation links and prevent chat from closing
   useEffect(() => {
     const handleLinkClick = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
       const link = target.closest('a');
       
       if (link && link.getAttribute('href')?.startsWith('/documentation')) {
-        // Open chat when clicking on documentation links
+        // Ensure chat stays open when clicking on documentation links
         openChat();
+        
+        // Store that we're navigating to documentation to keep chat open
+        localStorage.setItem('keepChatOpen', 'true');
+        localStorage.setItem('navigatingToDocs', 'true');
+      }
+    };
+
+    // Handle navigation events to keep chat open
+    const handleBeforeUnload = () => {
+      if (localStorage.getItem('navigatingToDocs') === 'true') {
+        localStorage.setItem('keepChatOpen', 'true');
+      }
+    };
+
+    // Handle page load to restore chat state
+    const handlePageLoad = () => {
+      if (localStorage.getItem('keepChatOpen') === 'true') {
+        openChat();
+        localStorage.removeItem('keepChatOpen');
+        localStorage.removeItem('navigatingToDocs');
       }
     };
 
     document.addEventListener('click', handleLinkClick);
-    return () => document.removeEventListener('click', handleLinkClick);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('load', handlePageLoad);
+    
+    return () => {
+      document.removeEventListener('click', handleLinkClick);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('load', handlePageLoad);
+    };
   }, [openChat]);
 
   const handleSendMessage = async () => {

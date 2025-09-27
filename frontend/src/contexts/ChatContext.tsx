@@ -42,7 +42,10 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   // Initialize chat state from localStorage or default to false
   const [isChatOpen, setIsChatOpen] = useState(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('chatOpen') === 'true';
+      // Check if we should keep chat open (e.g., when navigating from citations)
+      const keepOpen = localStorage.getItem('keepChatOpen') === 'true';
+      const chatOpen = localStorage.getItem('chatOpen') === 'true';
+      return keepOpen || chatOpen;
     }
     return false;
   });
@@ -115,6 +118,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     setIsChatOpen(true);
     if (typeof window !== 'undefined') {
       localStorage.setItem('chatOpen', 'true');
+      // Also set a flag to keep chat open during navigation
+      localStorage.setItem('keepChatOpen', 'true');
     }
   }, []);
 
@@ -122,6 +127,9 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     setIsChatOpen(false);
     if (typeof window !== 'undefined') {
       localStorage.setItem('chatOpen', 'false');
+      // Clean up navigation flags when manually closing chat
+      localStorage.removeItem('keepChatOpen');
+      localStorage.removeItem('navigatingToDocs');
     }
   }, []);
 
