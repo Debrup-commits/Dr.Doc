@@ -19,18 +19,25 @@ interface ChatContextType {
   messages: Message[];
   addMessage: (message: Omit<Message, 'id' | 'timestamp'>) => void;
   clearMessages: () => void;
+<<<<<<< HEAD
   startNewChat: () => void;
+=======
+>>>>>>> 1d392c7 (mcp crude implementation)
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
   sendMessage: (text: string) => Promise<void>;
   backendStatus: 'connected' | 'disconnected' | 'checking';
   checkBackendStatus: () => Promise<void>;
+<<<<<<< HEAD
   currentSessionId: string;
+=======
+>>>>>>> 1d392c7 (mcp crude implementation)
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 export function ChatProvider({ children }: { children: React.ReactNode }) {
+<<<<<<< HEAD
   // Initialize current session ID
   const [currentSessionId, setCurrentSessionId] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -39,6 +46,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     return Date.now().toString();
   });
 
+=======
+>>>>>>> 1d392c7 (mcp crude implementation)
   // Initialize chat state from localStorage or default to false
   const [isChatOpen, setIsChatOpen] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -52,13 +61,21 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     if (typeof window !== 'undefined') {
       const savedMessages = localStorage.getItem('chatMessages');
       const lastSessionId = localStorage.getItem('lastSessionId');
+<<<<<<< HEAD
       const currentSessionId = localStorage.getItem('currentSessionId') || Date.now().toString();
+=======
+      const currentSessionId = Date.now().toString();
+>>>>>>> 1d392c7 (mcp crude implementation)
       
       if (savedMessages) {
         try {
           const parsed = JSON.parse(savedMessages);
           // Convert timestamp strings back to Date objects
+<<<<<<< HEAD
           const messages = parsed.map((msg: Message) => ({
+=======
+          const messages = parsed.map((msg: any) => ({
+>>>>>>> 1d392c7 (mcp crude implementation)
             ...msg,
             timestamp: new Date(msg.timestamp)
           }));
@@ -84,7 +101,10 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       
       // First time user - set session ID
       localStorage.setItem('lastSessionId', currentSessionId);
+<<<<<<< HEAD
       localStorage.setItem('currentSessionId', currentSessionId);
+=======
+>>>>>>> 1d392c7 (mcp crude implementation)
     }
     
     return [
@@ -143,10 +163,17 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const clearMessages = useCallback(() => {
+<<<<<<< HEAD
     const newSessionId = Date.now().toString();
     const defaultMessages = [
       {
         id: `session-${newSessionId}`,
+=======
+    const currentSessionId = Date.now().toString();
+    const defaultMessages = [
+      {
+        id: `session-${currentSessionId}`,
+>>>>>>> 1d392c7 (mcp crude implementation)
         text: `🔄 New session started at ${new Date().toLocaleString()}`,
         sender: 'system' as const,
         timestamp: new Date(),
@@ -161,6 +188,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       },
     ];
     setMessages(defaultMessages);
+<<<<<<< HEAD
     setCurrentSessionId(newSessionId);
     // Clear messages from localStorage and set new session ID
     if (typeof window !== 'undefined') {
@@ -195,6 +223,12 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem('chatMessages', JSON.stringify(defaultMessages));
       localStorage.setItem('lastSessionId', newSessionId);
       localStorage.setItem('currentSessionId', newSessionId);
+=======
+    // Clear messages from localStorage and set new session ID
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('chatMessages', JSON.stringify(defaultMessages));
+      localStorage.setItem('lastSessionId', currentSessionId);
+>>>>>>> 1d392c7 (mcp crude implementation)
     }
   }, []);
 
@@ -220,7 +254,11 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         body: JSON.stringify({ 
           question: text.trim(),
           user_id: 'frontend_user',
+<<<<<<< HEAD
           session_id: currentSessionId
+=======
+          session_id: Date.now().toString()
+>>>>>>> 1d392c7 (mcp crude implementation)
         }),
       });
 
@@ -237,7 +275,11 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         
         // Add sources if available
         if (data.sources && data.sources.length > 0) {
+<<<<<<< HEAD
           const sourceNames = data.sources.map((source: string | { source?: string }) => 
+=======
+          const sourceNames = data.sources.map((source: any) => 
+>>>>>>> 1d392c7 (mcp crude implementation)
             typeof source === 'string' ? source : source.source || 'Unknown'
           );
           responseText += `\n\n📚 Sources: ${sourceNames.join(', ')}`;
@@ -286,7 +328,11 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
+<<<<<<< HEAD
   }, [addMessage, isLoading, currentSessionId]);
+=======
+  }, [addMessage, isLoading]);
+>>>>>>> 1d392c7 (mcp crude implementation)
 
   const checkBackendStatus = useCallback(async () => {
     setBackendStatus('checking');
@@ -327,13 +373,19 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     messages,
     addMessage,
     clearMessages,
+<<<<<<< HEAD
     startNewChat,
+=======
+>>>>>>> 1d392c7 (mcp crude implementation)
     isLoading,
     setIsLoading,
     sendMessage,
     backendStatus,
     checkBackendStatus,
+<<<<<<< HEAD
     currentSessionId,
+=======
+>>>>>>> 1d392c7 (mcp crude implementation)
   };
 
   return (

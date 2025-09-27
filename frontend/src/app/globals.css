@@ -33,39 +33,60 @@ body {
 @keyframes slideIn {
   from {
     transform: translateX(100%);
+<<<<<<< HEAD
     opacity: 0;
   }
   to {
     transform: translateX(0);
     opacity: 1;
+=======
+  }
+  to {
+    transform: translateX(0);
+>>>>>>> 1d392c7 (mcp crude implementation)
   }
 }
 
 @keyframes slideOut {
   from {
     transform: translateX(0);
+<<<<<<< HEAD
     opacity: 1;
   }
   to {
     transform: translateX(100%);
     opacity: 0;
+=======
+  }
+  to {
+    transform: translateX(100%);
+>>>>>>> 1d392c7 (mcp crude implementation)
   }
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
+<<<<<<< HEAD
     transform: translateY(20px) scale(0.95);
   }
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
+=======
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+>>>>>>> 1d392c7 (mcp crude implementation)
   }
 }
 
 @keyframes pulse {
   0%, 100% {
     opacity: 1;
+<<<<<<< HEAD
     transform: scale(1);
   }
   50% {
@@ -105,6 +126,16 @@ body {
 
 .chat-slide-in {
   animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+=======
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.chat-slide-in {
+  animation: slideIn 0.3s ease-out;
+>>>>>>> 1d392c7 (mcp crude implementation)
 }
 
 .chat-slide-out {
@@ -112,6 +143,7 @@ body {
 }
 
 .message-fade-in {
+<<<<<<< HEAD
   animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -162,6 +194,13 @@ body {
   ring: 2px;
   ring-color: rgba(16, 185, 129, 0.5);
   ring-offset: 2px;
+=======
+  animation: fadeIn 0.3s ease-out;
+}
+
+.typing-indicator {
+  animation: pulse 1.5s ease-in-out infinite;
+>>>>>>> 1d392c7 (mcp crude implementation)
 }
 
 /* Custom prose styles for markdown content */
@@ -170,6 +209,7 @@ body {
   max-width: none;
 }
 
+<<<<<<< HEAD
 /* Fix text positioning and spacing in chat messages */
 .prose-invert h1,
 .prose-invert h2,
@@ -264,6 +304,8 @@ body {
   overflow-wrap: break-word;
 }
 
+=======
+>>>>>>> 1d392c7 (mcp crude implementation)
 .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
   color: inherit;
   font-weight: 600;
@@ -322,6 +364,7 @@ body {
   font-style: italic;
 }
 
+<<<<<<< HEAD
 /* Enhanced markdown styling for better readability */
 .prose-invert h1 {
   background: linear-gradient(135deg, #10b981, #059669);
@@ -419,6 +462,8 @@ body {
   width: 100%;
 }
 
+=======
+>>>>>>> 1d392c7 (mcp crude implementation)
 /* Dark mode prose styles */
 [data-theme="dark"] .prose code {
   background-color: rgba(255, 255, 255, 0.1);
@@ -431,6 +476,7 @@ body {
 [data-theme="dark"] .prose blockquote {
   border-left-color: rgba(255, 255, 255, 0.2);
 }
+<<<<<<< HEAD
 
 /* Enhanced scrollbar styling for dark theme */
 ::-webkit-scrollbar {
@@ -461,3 +507,5 @@ body {
 .focus-ring {
   @apply focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 focus:ring-offset-slate-900;
 }
+=======
+>>>>>>> 1d392c7 (mcp crude implementation)
