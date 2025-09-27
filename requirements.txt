@@ -1,0 +1,15 @@
+# Core dependencies for Metta+RAG Agent
+uagents>=0.4.0
+agno>=2.0.8
+psycopg2-binary>=2.9.0
+pgvector>=0.2.0
+sentence-transformers>=2.2.0
+flask>=2.3.0
+flask-cors>=4.0.0
+python-dotenv>=1.0.0
+markdown>=3.4.0
+beautifulsoup4>=4.12.0
+hyperon>=0.1.0
+requests>=2.31.0
+asyncio-mqtt>=0.13.0
+
