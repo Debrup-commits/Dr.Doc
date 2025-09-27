@@ -1,23 +1,18 @@
-# Core Doc-Reader dependencies
-openai>=1.0.0
-faiss-cpu>=1.7.4
-langchain>=0.1.0
-langchain-openai>=0.1.0
+# Complete Fetch.ai Agno RAG Dependencies with Agent Support
+# Includes all components for RAG, MeTTa, and Agent integration
+
+# Core Flask application
 flask>=2.3.0
+flask-cors>=4.0.0
 python-dotenv>=1.0.0
+
+# Document processing
 markdown>=3.5.0
 beautifulsoup4>=4.12.0
-numpy>=1.24.0
-pandas>=2.0.0
-requests>=2.31.0
-
-# Optional: MeTTa dependencies (only needed if ENABLE_METTA=true)
-# hyperon-langchain>=0.1.0
-# hyperon>=0.1.0
 
 # Fetch.ai Agno RAG dependencies
-agno>=0.1.0
-uagents
+agno>=2.0.8
+uagents>=0.4.0
 uagents-core
 
 # Database and vector storage for Agno
@@ -25,8 +20,23 @@ sqlalchemy>=2.0.0
 psycopg2-binary>=2.9.0
 pgvector>=0.2.0
 
-# PDF processing (optional)
-pypdf>=3.0.0
+# MeTTa integration (optional)
+hyperon>=0.1.0
+
+# BGE embeddings (free alternative to OpenAI)
+sentence-transformers>=2.2.0
+
+# OpenAI fallback (optional)
+openai>=1.0.0
+
+# FAISS for fallback vector storage
+faiss-cpu>=1.7.0
 
 # Additional utilities
 aiohttp>=3.8.0
+requests>=2.31.0
+numpy>=1.21.0
+
+# Development and testing
+pytest>=7.0.0
+pytest-asyncio>=0.21.0

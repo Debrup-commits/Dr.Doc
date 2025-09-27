@@ -10,7 +10,7 @@ import rehypeRaw from 'rehype-raw';
 
 export default function ChatSidebar() {
   const { theme } = useTheme();
-  const { isChatOpen, toggleChat, messages, isLoading, sendMessage, clearMessages, backendStatus, checkBackendStatus } = useChat();
+  const { isChatOpen, toggleChat, openChat, messages, isLoading, sendMessage, clearMessages, backendStatus, checkBackendStatus } = useChat();
   const [inputText, setInputText] = useState('');
   const [isMinimized, setIsMinimized] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -29,6 +29,22 @@ export default function ChatSidebar() {
       inputRef.current.focus();
     }
   }, [isChatOpen]);
+
+  // Auto-open chat when clicking on citation links
+  useEffect(() => {
+    const handleLinkClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      const link = target.closest('a');
+      
+      if (link && link.getAttribute('href')?.startsWith('/documentation')) {
+        // Open chat when clicking on documentation links
+        openChat();
+      }
+    };
+
+    document.addEventListener('click', handleLinkClick);
+    return () => document.removeEventListener('click', handleLinkClick);
+  }, [openChat]);
 
   const handleSendMessage = async () => {
     if (!inputText.trim() || isLoading) return;

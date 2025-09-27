@@ -1,17 +1,6 @@
-# 🚀 ethNewDelhi2025 - Complete RAG/MeTTa Agent System
+# 🤖 Agent Integration Guide - RAG/MeTTa Systems
 
-A comprehensive document ingestion and query system that combines **MeTTa symbolic reasoning** with **Fetch.ai Agno RAG** for precise API documentation analysis, designed for agent-based query answering without requiring OpenAI keys.
-
-## ✨ **Key Features**
-
-- 🧠 **MeTTa Integration**: Symbolic reasoning for precise fact extraction
-- 🤖 **Fetch.ai Agno RAG**: Advanced RAG with PgVector database  
-- 🔓 **No OpenAI Required**: Uses Fetch.ai ASI:One + BGE embeddings
-- 📊 **Hybrid Intelligence**: Combines symbolic and neural approaches
-- 🚀 **Agent-Ready**: Multiple integration methods for agents
-- 🔧 **Easy Setup**: One-command startup with automatic configuration
-- 📡 **REST API**: Complete API for external integrations
-- 🧪 **Comprehensive Testing**: Built-in test suite
+This guide explains how to integrate and use the RAG/MeTTa systems in the ethNewDelhi2025 project for agent-based query answering.
 
 ## 🏗️ **System Architecture**
 
@@ -19,8 +8,8 @@ A comprehensive document ingestion and query system that combines **MeTTa symbol
 ┌─────────────────────────────────────────────────────────────────┐
 │                        AGENT LAYER                            │
 │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐ │
-│  │   uAgent        │  │   REST API      │  │   Direct        │ │
-│  │   (Autonomous)  │  │   (HTTP)        │  │   Interface     │ │
+│  │   uAgent        │  │   API Adapter   │  │   Direct        │ │
+│  │   (Autonomous)  │  │   (REST API)    │  │   Interface     │ │
 │  └─────────────────┘  └─────────────────┘  └─────────────────┘ │
 └─────────────────────────────────────────────────────────────────┘
                                 │
@@ -41,49 +30,43 @@ A comprehensive document ingestion and query system that combines **MeTTa symbol
 │  │   (Symbolic)    │  │   (Neural)      │  │   (Fallback)    │ │
 │  └─────────────────┘  └─────────────────┘  └─────────────────┘ │
 └─────────────────────────────────────────────────────────────────┘
-                                │
-                                ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                    MODEL LAYER                                 │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐ │
-│  │   Fetch.ai      │  │   BGE Embedder  │  │   Hyperon       │ │
-│  │   ASI:One       │  │   (Free)        │  │   (MeTTa)       │ │
-│  └─────────────────┘  └─────────────────┘  └─────────────────┘ │
-└─────────────────────────────────────────────────────────────────┘
 ```
 
 ## 🚀 **Quick Start**
 
-### **One-Command Setup**
+### **1. Setup Environment**
 ```bash
-# Clone and setup everything automatically
-python start_metta_rag.py
-```
+# Install dependencies
+pip install -r requirements-agno-minimal.txt
 
-### **Manual Setup**
-```bash
-# 1. Install dependencies
-pip install -r requirements-agno.txt
-
-# 2. Start database
-docker-compose up -d
-
-# 3. Configure environment
+# Configure environment
 cp env-fetchai-only.example .env
 # Edit .env with your ASI_ONE_API_KEY
 
-# 4. Test system
-python test_agent_system.py
+# Start database
+docker-compose up -d
+```
 
-# 5. Start services
-python backend/app_agno_hybrid.py      # Main system (port 5003)
-python backend/agent_api_adapter.py    # Agent API (port 5001)
-python backend/doc_qa_agent.py         # uAgent (port 8001)
+### **2. Start the Systems**
+```bash
+# Option 1: One-command startup
+python start_metta_rag.py
+
+# Option 2: Manual startup
+# Terminal 1: Start uAgent
+python backend/doc_qa_agent.py
+
+# Terminal 2: Start API adapter
+python backend/agent_api_adapter.py
+
+# Terminal 3: Start hybrid system
+python backend/app_agno_hybrid.py
 ```
 
 ## 🔧 **Integration Methods**
 
 ### **Method 1: Direct Interface (Recommended)**
+
 ```python
 from backend.agent_rag_interface import get_agent_interface, QueryType
 
@@ -93,6 +76,14 @@ interface = get_agent_interface()
 # Query with auto-detection
 result = interface.query("What OAuth flows are supported?")
 
+# Query with specific type
+result = interface.query(
+    question="What are the rate limits?",
+    query_type=QueryType.METTA,
+    context="API documentation",
+    user_id="user123"
+)
+
 print(f"Answer: {result.answer}")
 print(f"Confidence: {result.confidence}")
 print(f"Facts: {len(result.facts)}")
@@ -100,6 +91,7 @@ print(f"Sources: {len(result.sources)}")
 ```
 
 ### **Method 2: REST API**
+
 ```python
 import requests
 
@@ -116,6 +108,7 @@ print(f"Answer: {result['answer']}")
 ```
 
 ### **Method 3: uAgent Communication**
+
 ```python
 from uagents import Agent, Context, Model
 from backend.doc_qa_agent import QuestionRequest, QuestionResponse
@@ -126,6 +119,7 @@ my_agent = Agent(name="MyAgent", seed="your-seed")
 @my_agent.on_message(model=QuestionResponse)
 async def handle_response(ctx: Context, sender: str, msg: QuestionResponse):
     print(f"Answer: {msg.answer}")
+    print(f"Confidence: {msg.confidence}")
 
 # Send question to Document Q&A agent
 async def ask_question(question: str):
@@ -137,12 +131,39 @@ async def ask_question(question: str):
 
 ## 📊 **Query Types**
 
-| Type | Description | Best For | Example |
-|------|-------------|----------|---------|
-| **Auto** | Automatically detects best type | General use | `"What OAuth flows are supported?"` |
-| **RAG** | Comprehensive contextual answers | Implementation guidance | `"How do I implement authentication?"` |
-| **MeTTa** | Precise facts and structured data | Specific information | `"What error codes does /swap return?"` |
-| **Hybrid** | Combines MeTTa + RAG | Best results | `"What OAuth flows are supported?"` |
+### **Auto Detection (Recommended)**
+```python
+# Automatically detects best query type
+result = interface.query("What OAuth flows are supported?")
+# Uses hybrid for security patterns
+```
+
+### **RAG Only**
+```python
+# For comprehensive, contextual answers
+result = interface.query(
+    question="How do I implement authentication?",
+    query_type=QueryType.RAG
+)
+```
+
+### **MeTTa Only**
+```python
+# For precise facts and structured data
+result = interface.query(
+    question="What error codes does /swap return?",
+    query_type=QueryType.METTA
+)
+```
+
+### **Hybrid (Best Results)**
+```python
+# Combines MeTTa facts with RAG context
+result = interface.query(
+    question="What OAuth flows are supported?",
+    query_type=QueryType.HYBRID
+)
+```
 
 ## 🧠 **MeTTa Knowledge Base**
 
@@ -154,17 +175,24 @@ async def ask_question(question: str):
 - **Rate Limits**: API quotas and limits
 - **API Endpoints**: Available endpoints and methods
 
-### **Example MeTTa Queries**
+### **Querying MeTTa Facts**
 ```python
 # Direct MeTTa queries
 if interface.metta_kb:
+    # Get all endpoints
     endpoints = interface.metta_kb.query_endpoints()
+    
+    # Get error codes for specific endpoint
     error_codes = interface.metta_kb.query_error_codes("/swap")
+    
+    # Get security patterns
     security_patterns = interface.metta_kb.query_security_patterns()
+    
+    # Advanced pattern queries
     results = interface.metta_kb.query_advanced_patterns("OAuth authentication")
 ```
 
-## 🔍 **RAG Systems**
+## 🔍 **RAG System**
 
 ### **Agno RAG (Primary)**
 - **Vector Database**: PgVector (PostgreSQL)
@@ -177,6 +205,15 @@ if interface.metta_kb:
 - **Embeddings**: OpenAI (requires API key)
 - **LLM**: OpenAI GPT models
 - **Search**: Semantic only
+
+### **Document Processing**
+```python
+# Ingest documents
+success = interface.ingest_documents("../docs")
+
+# Extract MeTTa facts
+success = interface.extract_metta_facts("../docs")
+```
 
 ## 📡 **API Endpoints**
 
@@ -212,6 +249,7 @@ curl -X POST http://localhost:5001/api/ingest \
 
 ### **1. API Documentation Q&A**
 ```python
+# Questions about API endpoints, parameters, errors
 questions = [
     "What endpoints are available?",
     "What parameters does /swap accept?",
@@ -222,6 +260,7 @@ questions = [
 
 ### **2. Security Analysis**
 ```python
+# Questions about authentication and security
 questions = [
     "What OAuth flows are supported?",
     "How do I authenticate with the API?",
@@ -232,6 +271,7 @@ questions = [
 
 ### **3. Performance Optimization**
 ```python
+# Questions about performance and optimization
 questions = [
     "What caching strategies are used?",
     "How can I optimize API performance?",
@@ -242,6 +282,7 @@ questions = [
 
 ### **4. Implementation Guidance**
 ```python
+# Questions about implementation and usage
 questions = [
     "How do I implement OAuth 2.0?",
     "How do I handle rate limiting?",
@@ -270,26 +311,17 @@ AGENT_SEED=your-agent-seed
 DB_URL=postgresql+psycopg://ai:ai@localhost:5532/ai
 ```
 
-### **Available Configurations**
+### **Query Type Detection**
+The system automatically detects the best query type based on question patterns:
 
-| File | Description | Use Case |
-|------|-------------|----------|
-| `env-fetchai-only.example` | Pure Fetch.ai setup | No OpenAI dependency |
-| `env-enhanced.example` | Enhanced with fallback | OpenAI fallback support |
+- **Security/Auth questions** → Hybrid (MeTTa + RAG)
+- **Error codes/Rate limits** → MeTTa
+- **General questions** → RAG
+- **Implementation questions** → RAG
 
 ## 🧪 **Testing**
 
-### **Quick Test**
-```bash
-python test_agent_system.py --quick
-```
-
-### **Comprehensive Test**
-```bash
-python test_agent_system.py
-```
-
-### **Individual Component Tests**
+### **Test Individual Components**
 ```bash
 # Test MeTTa system
 python backend/metta_ingest.py
@@ -301,37 +333,46 @@ python backend/fetchai_agno_rag.py
 python backend/agent_rag_interface.py
 ```
 
-## 📚 **Documentation**
+### **Test Complete System**
+```bash
+# Test hybrid system
+python backend/app_agno_hybrid.py
 
-- [Agent Integration Guide](AGENT_INTEGRATION_GUIDE.md) - Complete agent integration guide
-- [Fetch.ai Agno RAG Guide](FETCHAI_AGNO_RAG_GUIDE.md) - RAG system setup
-- [MeTTa Integration Guide](METTA_INTEGRATION_GUIDE.md) - MeTTa system setup
-- [System Overview](README_METTA_RAG.md) - Detailed system overview
+# Test agent
+python backend/doc_qa_agent.py
+
+# Test API adapter
+python backend/agent_api_adapter.py
+```
+
+### **Example Test Questions**
+```python
+test_questions = [
+    "What OAuth flows are supported?",
+    "What are the rate limits for the free tier?",
+    "How do I authenticate with the API?",
+    "What error codes can the /swap endpoint return?",
+    "What caching strategies are implemented?",
+    "How do I implement monitoring?",
+    "What performance optimization patterns are available?",
+    "What security patterns are used?"
+]
+```
 
 ## 🚨 **Troubleshooting**
 
 ### **Common Issues**
 
-1. **Database Connection Error**
+1. **RAG System Not Initialized**
    ```bash
-   # Check if PostgreSQL is running
+   # Check database
    docker-compose up -d
-   docker ps
+   
+   # Check API keys
+   echo $ASI_ONE_API_KEY
    ```
 
-2. **API Key Issues**
-   ```bash
-   # Verify API key in .env
-   cat .env | grep ASI_ONE_API_KEY
-   ```
-
-3. **Import Errors**
-   ```bash
-   # Install dependencies
-   pip install -r requirements-agno.txt
-   ```
-
-4. **MeTTa Issues**
+2. **MeTTa Not Available**
    ```bash
    # Install MeTTa
    pip install hyperon
@@ -340,7 +381,7 @@ python backend/agent_rag_interface.py
    python backend/metta_ingest.py
    ```
 
-5. **Agent Communication Failed**
+3. **Agent Communication Failed**
    ```bash
    # Check agent address
    echo $AGENT_ADDRESS
@@ -349,29 +390,21 @@ python backend/agent_rag_interface.py
    curl http://localhost:5001/api/health
    ```
 
-### **Port Conflicts**
-- **PostgreSQL**: 5532
-- **Main Server**: 5003
-- **Agent API**: 5001
-- **uAgent**: 8001
+4. **No Documents Found**
+   ```bash
+   # Check docs directory
+   ls -la docs/
+   
+   # Ingest documents
+   curl -X POST http://localhost:5001/api/ingest
+   ```
 
-## 🔗 **External Resources**
+## 📚 **Additional Resources**
 
-- [Fetch.ai ASI:One](https://docs.fetch.ai/asi-one/)
-- [Agno RAG Framework](https://github.com/fetchai/innovation-lab-examples)
-- [MeTTa/Hyperon](https://github.com/trueagi-io/hyperon)
-- [PgVector](https://github.com/pgvector/pgvector)
-
-## 🎯 **System Benefits**
-
-✅ **No OpenAI Dependency** - Uses Fetch.ai ASI:One + BGE embeddings  
-✅ **Free Embeddings** - BGE model runs locally  
-✅ **Hybrid Intelligence** - MeTTa (symbolic) + RAG (neural)  
-✅ **Scalable Database** - PgVector instead of FAISS  
-✅ **Agent-Ready** - Multiple integration methods  
-✅ **Easy Setup** - One-command startup  
-✅ **Comprehensive Testing** - Built-in test suite  
-✅ **REST API** - Complete API for external integrations  
+- [Fetch.ai Agno RAG Guide](FETCHAI_AGNO_RAG_GUIDE.md)
+- [MeTTa Integration Guide](METTA_INTEGRATION_GUIDE.md)
+- [System Overview](README_METTA_RAG.md)
+- [API Documentation](docs/)
 
 ## 🤝 **Contributing**
 
@@ -385,6 +418,3 @@ python backend/agent_rag_interface.py
 
 This project is part of the ethNewDelhi2025 initiative and follows the project's licensing terms.
 
----
-
-**Ready to get started?** Run `python start_metta_rag.py` and begin querying your documents with AI-powered agents! 🚀

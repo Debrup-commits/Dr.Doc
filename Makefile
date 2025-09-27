@@ -136,3 +136,5 @@ db-reset: ## Reset the database
 	@echo "⚠️  This will delete all data in the 'ai' database"
 	@read -p "Are you sure? (y/N): " confirm && [ "$$confirm" = "y" ] && dropdb ai && createdb ai && psql ai -c 'CREATE EXTENSION vector;' || echo "Database reset cancelled"
 
+
+

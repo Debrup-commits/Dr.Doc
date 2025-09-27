@@ -13,6 +13,8 @@ export interface Message {
 interface ChatContextType {
   isChatOpen: boolean;
   toggleChat: () => void;
+  openChat: () => void;
+  closeChat: () => void;
   messages: Message[];
   addMessage: (message: Omit<Message, 'id' | 'timestamp'>) => void;
   clearMessages: () => void;
@@ -26,20 +28,66 @@ interface ChatContextType {
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 export function ChatProvider({ children }: { children: React.ReactNode }) {
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      text: 'Hello! I\'m your AI agent. How can I help you today?',
-      sender: 'agent',
-      timestamp: new Date(),
-    },
-  ]);
+  // Initialize chat state from localStorage or default to false
+  const [isChatOpen, setIsChatOpen] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('chatOpen') === 'true';
+    }
+    return false;
+  });
+  
+  // Initialize messages from localStorage or default
+  const [messages, setMessages] = useState<Message[]>(() => {
+    if (typeof window !== 'undefined') {
+      const savedMessages = localStorage.getItem('chatMessages');
+      if (savedMessages) {
+        try {
+          const parsed = JSON.parse(savedMessages);
+          // Convert timestamp strings back to Date objects
+          return parsed.map((msg: any) => ({
+            ...msg,
+            timestamp: new Date(msg.timestamp)
+          }));
+        } catch (error) {
+          console.error('Failed to parse saved messages:', error);
+        }
+      }
+    }
+    return [
+      {
+        id: '1',
+        text: 'Hello! I\'m your AI agent. How can I help you today?',
+        sender: 'agent',
+        timestamp: new Date(),
+      },
+    ];
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [backendStatus, setBackendStatus] = useState<'connected' | 'disconnected' | 'checking'>('checking');
 
   const toggleChat = useCallback(() => {
-    setIsChatOpen(prev => !prev);
+    setIsChatOpen(prev => {
+      const newState = !prev;
+      // Persist chat state to localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('chatOpen', newState.toString());
+      }
+      return newState;
+    });
+  }, []);
+
+  const openChat = useCallback(() => {
+    setIsChatOpen(true);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('chatOpen', 'true');
+    }
+  }, []);
+
+  const closeChat = useCallback(() => {
+    setIsChatOpen(false);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('chatOpen', 'false');
+    }
   }, []);
 
   const addMessage = useCallback((message: Omit<Message, 'id' | 'timestamp'>) => {
@@ -48,18 +96,30 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       timestamp: new Date(),
     };
-    setMessages(prev => [...prev, newMessage]);
+    setMessages(prev => {
+      const updatedMessages = [...prev, newMessage];
+      // Persist messages to localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('chatMessages', JSON.stringify(updatedMessages));
+      }
+      return updatedMessages;
+    });
   }, []);
 
   const clearMessages = useCallback(() => {
-    setMessages([
+    const defaultMessages = [
       {
         id: '1',
         text: 'Hello! I\'m your AI agent. How can I help you today?',
-        sender: 'agent',
+        sender: 'agent' as const,
         timestamp: new Date(),
       },
-    ]);
+    ];
+    setMessages(defaultMessages);
+    // Clear messages from localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('chatMessages', JSON.stringify(defaultMessages));
+    }
   }, []);
 
   const sendMessage = useCallback(async (text: string) => {
@@ -186,6 +246,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const value: ChatContextType = {
     isChatOpen,
     toggleChat,
+    openChat,
+    closeChat,
     messages,
     addMessage,
     clearMessages,

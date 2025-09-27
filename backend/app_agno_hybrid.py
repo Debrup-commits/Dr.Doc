@@ -177,25 +177,25 @@ class AgnoHybridQASystem:
             question_lower = question.lower()
             
             # Security-related queries
-            if any(word in question_lower for word in ['oauth', 'authentication', 'security', 'auth', 'token']):
+            if any(word in question_lower for word in ['oauth', 'authentication', 'security', 'auth']):
                 security_patterns = self.metta_kb.query_security_patterns()
                 if security_patterns:
                     return self._format_metta_response(security_patterns, question, 'security')
             
             # Performance-related queries
-            if any(word in question_lower for word in ['performance', 'cache', 'optimization', 'speed', 'fast']):
+            if any(word in question_lower for word in ['performance', 'cache', 'optimization', 'speed']):
                 performance_patterns = self.metta_kb.query_performance_patterns()
                 if performance_patterns:
                     return self._format_metta_response(performance_patterns, question, 'performance')
             
             # Monitoring-related queries
-            if any(word in question_lower for word in ['monitoring', 'logging', 'metrics', 'observability', 'logs']):
+            if any(word in question_lower for word in ['monitoring', 'logging', 'metrics', 'observability']):
                 monitoring_concepts = self.metta_kb.query_monitoring_concepts()
                 if monitoring_concepts:
                     return self._format_metta_response(monitoring_concepts, question, 'monitoring')
             
             # Error handling queries
-            if any(word in question_lower for word in ['error', 'exception', 'failure', 'handling', 'code']):
+            if any(word in question_lower for word in ['error', 'exception', 'failure', 'handling']):
                 error_codes = self.metta_kb.query_error_codes()
                 if error_codes:
                     return self._format_metta_response(error_codes, question, 'errors')

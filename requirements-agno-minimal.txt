@@ -1,0 +1,28 @@
+# Minimal Fetch.ai Agno RAG Dependencies (No MeTTa)
+# Only install what you actually need!
+
+# Core Flask application
+flask>=2.3.0
+python-dotenv>=1.0.0
+
+# Document processing
+markdown>=3.5.0
+beautifulsoup4>=4.12.0
+
+# Fetch.ai Agno RAG dependencies
+agno>=0.1.0
+uagents
+uagents-core
+
+# Database and vector storage for Agno
+sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.0
+pgvector>=0.2.0
+
+# Optional: OpenAI fallback (only if you want fallback support)
+# openai>=1.0.0
+
+# Additional utilities
+aiohttp>=3.8.0
+requests>=2.31.0
+

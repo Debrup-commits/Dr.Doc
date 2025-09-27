@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 """
-RAG Ingestion Script for TokenSwap API Documentation
-
-This script processes Markdown documentation files, creates embeddings,
-and stores them in a FAISS vector database for retrieval-augmented generation.
+RAG Ingestion Script for API Documentation
+Fallback system using FAISS and OpenAI embeddings
 """
 
 import os
