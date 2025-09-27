@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """
-Simple RAG System using BGE embeddings and PostgreSQL
-Works with the existing database setup
+Dr.Doc Simple RAG System
+
+Clean RAG implementation using BGE embeddings and PostgreSQL.
+Provides document retrieval and similarity search capabilities.
+
+Author: Dr.Doc Team
 """
 
 import os
@@ -9,7 +13,7 @@ import logging
 from typing import List, Dict, Any, Optional
 from dotenv import load_dotenv
 
-# MeTTa integration
+# MeTTa integration (optional)
 METTA_AVAILABLE = False
 MeTTaKnowledgeBase = None
 
@@ -21,10 +25,8 @@ except ImportError as e:
     print(f"⚠️  MeTTa import failed: {e}")
     print("⚠️  Continuing without MeTTa integration")
 
-# Load environment variables
+# Configuration
 load_dotenv()
-
-# Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 

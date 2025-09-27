@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """
 Dr.Doc MCP Server
-Two endpoints:
-1. process_documents - Idempotent data processing
-2. ask_dr_doc - ASI:One agent for document Q&A
+
+A clean MCP server implementation with two core endpoints:
+1. process_documents - Idempotent document processing (MeTTa + RAG)
+2. ask_dr_doc - ASI:One powered document Q&A agent
+
+Author: Dr.Doc Team
 """
 
 import os
@@ -12,25 +15,23 @@ from typing import Optional
 from pathlib import Path
 from dotenv import load_dotenv
 
-# FastMCP imports
+# External dependencies
 from mcp.server.fastmcp import FastMCP
 
-# Local imports
+# Local modules
 from simple_rag import SimpleRAG
 from metta_ingest import MeTTaFactExtractor, MeTTaKnowledgeBase
 from simple_ingest import process_markdown_files, store_documents_in_db, generate_embeddings
 
-# Load environment variables
+# Configuration
 load_dotenv()
-
-# Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Create FastMCP server instance
+# MCP Server instance
 mcp = FastMCP("dr-doc")
 
-# Global state
+# Global application state
 rag_system = None
 metta_kb = None
 processing_status = {"initialized": False}
@@ -188,39 +189,12 @@ async def ask_dr_doc(question: str, session_id: Optional[str] = None) -> str:
     try:
         logger.info(f"🤖 Dr.Doc Agent received question: {question[:100]}...")
         
-        # Initialize RAG system if needed
+        # RAG system should be initialized at server startup
         if rag_system is None:
-            rag_system = SimpleRAG()
-        
-        # Check if RAG system has documents (this indicates proper initialization)
-        try:
-            import psycopg2
-            conn = psycopg2.connect(
-                host="localhost", port="5532", database="ai", 
-                user="ai", password="ai"
-            )
-            cursor = conn.cursor()
-            cursor.execute("SELECT COUNT(*) FROM documents")
-            doc_count = cursor.fetchone()[0]
-            cursor.close()
-            conn.close()
-            
-            if doc_count == 0:
-                return """
-❌ Dr.Doc Agent not initialized!
-
-Please first call the 'process_documents' endpoint with your documents directory path.
-
-Example: process_documents("/path/to/your/docs")
-                """.strip()
-        except Exception as e:
-            logger.warning(f"Could not check database status: {e}")
             return """
-❌ Dr.Doc Agent not initialized!
+❌ RAG system not initialized!
 
-Please first call the 'process_documents' endpoint with your documents directory path.
-
-Example: process_documents("/path/to/your/docs")
+The RAG system should be initialized at server startup. Please restart the server.
             """.strip()
         
         # Step 1: Get RAG context
