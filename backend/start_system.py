@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """
-Clean Dr.Doc System Startup
-Minimal system with MCP server and HTTP API wrapper
+Dr.Doc System Startup
+
+Clean, minimal startup script for the Dr.Doc MCP-based system.
+Supports multiple modes: MCP server, API wrapper, and uAgent integration.
+
+Author: Dr.Doc Team
 """
 
 import os
@@ -10,7 +14,7 @@ import argparse
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Load environment variables
+# Configuration
 load_dotenv()
 
 def check_environment():
