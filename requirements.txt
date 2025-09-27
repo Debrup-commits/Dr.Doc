@@ -1,5 +1,7 @@
 # Core dependencies for Metta+RAG Agent
 uagents>=0.4.0
+uagents-adapter>=0.1.0
+fastmcp>=0.1.0
 agno>=2.0.8
 psycopg2-binary>=2.9.0
 pgvector>=0.2.0

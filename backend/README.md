@@ -4,7 +4,7 @@ A clean, minimal MCP-based backend implementation for document processing and Q&
 
 ## Architecture
 
-The backend consists of 5 core modules:
+The backend consists of 7 core modules:
 
 - **`mcp_server.py`** - Core MCP server with two endpoints
 - **`api_wrapper.py`** - Flask HTTP wrapper for frontend integration  
@@ -12,6 +12,8 @@ The backend consists of 5 core modules:
 - **`metta_ingest.py`** - MeTTa knowledge base for symbolic reasoning
 - **`simple_ingest.py`** - Document processing utilities
 - **`start_system.py`** - Unified startup script
+- **`dr_doc_agent.py`** - uAgent implementation with MCP integration
+- **`server.py`** - Server wrapper for uAgent compatibility
 
 ## Core Endpoints
 
@@ -42,8 +44,11 @@ The backend consists of 5 core modules:
 
 3. **Start System**:
    ```bash
-   python3 start_system.py api    # HTTP API wrapper
-   python3 start_system.py mcp    # MCP server (stdio)
+   python3 start_system.py init       # Initialize RAG pipeline first
+   python3 start_system.py api        # HTTP API wrapper
+   python3 start_system.py mcp        # MCP server (stdio)
+   python3 start_system.py uagent     # uAgent with MCP integration
+   python3 start_system.py test-uagent # Test uAgent integration
    ```
 
 ## API Endpoints
@@ -52,6 +57,30 @@ The backend consists of 5 core modules:
 - `GET /api/status` - System status
 - `POST /api/process-documents` - Process documents
 - `POST /api/ask` - Ask questions to Dr.Doc
+
+## uAgent Integration
+
+The system supports uAgent integration for deployment on Agentverse:
+
+### Prerequisites
+```bash
+pip install uagents uagents-adapter fastmcp
+```
+
+### Usage
+```bash
+# Test uAgent integration
+python3 start_system.py test-uagent
+
+# Run uAgent
+python3 start_system.py uagent
+```
+
+### Features
+- **MCP Server Adapter**: Converts MCP server to uAgent-compatible interface
+- **ASI:One Integration**: Uses ASI:One API for agent communication
+- **RAG + MeTTa**: Full document processing and symbolic reasoning
+- **Agentverse Deployment**: Ready for deployment on Fetch.ai's Agentverse
 
 ## Dependencies
 

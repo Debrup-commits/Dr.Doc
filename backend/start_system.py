@@ -109,13 +109,29 @@ def run_uagent():
     except Exception as e:
         print(f"\n❌ Dr.Doc uAgent failed: {e}")
 
+def run_uagent_test():
+    """Run uAgent integration tests"""
+    print("\n🧪 Starting uAgent Integration Tests...")
+    print("📍 This will test the uAgent integration components")
+    
+    try:
+        import asyncio
+        from test_uagent import main as test_main
+        return asyncio.run(test_main())
+    except KeyboardInterrupt:
+        print("\n🛑 uAgent tests interrupted by user")
+        return 1
+    except Exception as e:
+        print(f"\n❌ uAgent tests failed: {e}")
+        return 1
+
 def main():
     """Main function"""
     parser = argparse.ArgumentParser(description="Dr.Doc System")
     parser.add_argument(
         "mode", 
-        choices=["init", "mcp", "api", "uagent"], 
-        help="Mode to run: 'init' (initialize RAG pipeline), 'mcp' (standalone MCP server), 'api' (HTTP API wrapper), or 'uagent' (uAgent with MCP)"
+        choices=["init", "mcp", "api", "uagent", "test-uagent"], 
+        help="Mode to run: 'init' (initialize RAG pipeline), 'mcp' (standalone MCP server), 'api' (HTTP API wrapper), 'uagent' (uAgent with MCP), or 'test-uagent' (test uAgent integration)"
     )
     
     args = parser.parse_args()
@@ -135,6 +151,8 @@ def main():
         run_api_wrapper()
     elif args.mode == "uagent":
         run_uagent()
+    elif args.mode == "test-uagent":
+        run_uagent_test()
 
 if __name__ == "__main__":
     main()
